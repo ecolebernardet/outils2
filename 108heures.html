@@ -97,7 +97,7 @@
         <div id="displayContainer" class="grid grid-cols-2 gap-3"></div>
 
         <footer class="bottom-nav">
-            <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white uppercase">👆exporter👆</button>
+            <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white ">👆exporter👆</button>
             <label class="nav-btn bg-zinc-800 text-white cursor-pointer text-center">
                 👇importer👇
                 <input type="file" id="importFile" class="hidden" accept=".txt">
@@ -203,7 +203,7 @@
         function exportData() {
             const blob = new Blob([JSON.stringify(reunions, null, 2)], { type: 'text/plain' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `heures_108h.txt`; a.click();
+            a.download = `108heures.txt`; a.click();
         }
 
         document.getElementById('importFile').addEventListener('change', function(e) {
