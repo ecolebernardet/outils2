@@ -1,7 +1,7 @@
 [
   {
     "name": "krokotak",
-    "url": "krokotak.com",
+    "url": "https://krokotak.com",
     "cat": "Autre"
   }
 ]
