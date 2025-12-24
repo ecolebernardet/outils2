@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Compteur Heures Réunion</title>
+    <title>108 heures</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
@@ -59,7 +59,28 @@
     <div class="max-w-4xl mx-auto">
         <h1 class="text-center text-lg font-black uppercase my-4 tracking-tighter text-white">Compteur d'Heures</h1>
         
-        <div id="globalStats" class="max-w-md mx-auto light-card p-5 mb-6 shadow-xl border-t-4 border-indigo-600">
+        <div class="max-w-md mx-auto light-card p-4 mb-6 shadow-2xl">
+            <form id="heuresForm" class="flex flex-col gap-3">
+                <div class="grid grid-cols-4 gap-1.5">
+                    <label><input type="radio" name="cat" value="APC" class="card-input" checked><div class="card-label">APC</div></label>
+                    <label><input type="radio" name="cat" value="PEDAGO" class="card-input"><div class="card-label">Réunions</div></label>
+                    <label><input type="radio" name="cat" value="FORM" class="card-input"><div class="card-label">Formation</div></label>
+                    <label><input type="radio" name="cat" value="CONSEIL" class="card-input"><div class="card-label">Conseil d'école</div></label>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="date" id="dateReu" class="input-field" required>
+                    <div class="flex items-center gap-1 bg-white border border-gray-400 rounded-lg px-2 h-full">
+                        <input type="number" id="h" class="bg-transparent w-full outline-none text-center text-gray-900 font-bold text-xs" min="0" value="1">
+                        <span class="text-gray-400 font-bold">:</span>
+                        <input type="number" id="m" class="bg-transparent w-full outline-none text-center text-gray-900 font-bold text-xs" min="0" max="59" value="0">
+                    </div>
+                </div>
+                <input type="text" id="comm" placeholder="Commentaire..." class="input-field">
+                <button type="submit" class="bg-indigo-600 text-white font-black py-2 rounded-full uppercase text-[10px] active:scale-95 transition-transform">Enregistrer</button>
+            </form>
+        </div>
+
+        <div id="globalStats" class="max-w-md mx-auto light-card p-3 mb-5 shadow-xl">
             <div class="flex justify-between items-end mb-1">
                 <span class="text-[10px] font-black uppercase tracking-widest text-indigo-700">Total Annuel (108h)</span>
                 <span id="globalReste" class="text-[10px] font-black text-indigo-900"></span>
@@ -73,43 +94,22 @@
             </div>
         </div>
 
-        <div class="max-w-md mx-auto light-card p-4 mb-8 shadow-2xl">
-            <form id="heuresForm" class="flex flex-col gap-3">
-                <div class="grid grid-cols-4 gap-1.5">
-                    <label><input type="radio" name="cat" value="APC" class="card-input" checked><div class="card-label">APC</div></label>
-                    <label><input type="radio" name="cat" value="PEDAGO" class="card-input"><div class="card-label">Réunion</div></label>
-                    <label><input type="radio" name="cat" value="FORM" class="card-input"><div class="card-label">Form.</div></label>
-                    <label><input type="radio" name="cat" value="CONSEIL" class="card-input"><div class="card-label">Conseil</div></label>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <input type="date" id="dateReu" class="input-field" required>
-                    <div class="flex items-center gap-1 bg-white border border-gray-400 rounded-lg px-2 h-full">
-                        <input type="number" id="h" class="bg-transparent w-full outline-none text-center text-gray-900 font-bold text-xs" min="0" value="1">
-                        <span class="text-gray-400 font-bold">:</span>
-                        <input type="number" id="m" class="bg-transparent w-full outline-none text-center text-gray-900 font-bold text-xs" min="0" max="59" value="0">
-                    </div>
-                </div>
-                <input type="text" id="comm" placeholder="Commentaire..." class="input-field">
-                <button type="submit" class="bg-indigo-600 text-white font-black py-3 rounded-full uppercase text-[10px] active:scale-95 transition-transform">Enregistrer</button>
-            </form>
-        </div>
-
         <div id="displayContainer" class="grid grid-cols-2 gap-3"></div>
 
         <footer class="bottom-nav">
-            <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white uppercase">💾 exporter</button>
-            <label class="nav-btn bg-zinc-800 text-white cursor-pointer uppercase text-center">
-                📂 importer
+            <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white uppercase">👆exporter👆</button>
+            <label class="nav-btn bg-zinc-800 text-white cursor-pointer text-center">
+                👇importer👇
                 <input type="file" id="importFile" class="hidden" accept=".txt">
             </label>
-            <a href="index.html" class="nav-btn bg-[#71bd7b] text-green-950 no-underline uppercase">Accueil</a>
+            <a href="index.html" class="nav-btn bg-[#71bd7b] text-green-950 no-underline ">Accueil</a>
         </footer>
     </div>
 
     <script>
         const QUOTAS = { "APC": 36 * 60, "PEDAGO": 48 * 60, "FORM": 18 * 60, "CONSEIL": 6 * 60 };
         const TOTAL_ANNUEL = 108 * 60;
-        const LABELS = { "APC": "APC", "PEDAGO": "Réunions", "FORM": "Form.", "CONSEIL": "Conseils" };
+        const LABELS = { "APC": "APC", "PEDAGO": "Réunions", "FORM": "Formation", "CONSEIL": "Conseils d'école" };
 
         let reunions = JSON.parse(localStorage.getItem('mesHeuresReu')) || [];
 
