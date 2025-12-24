@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mes documents utiles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body { 
+            background-color: #000000; 
+            color: #e0e0e0; 
+            margin: 0; 
+            padding: 12px; 
+            font-family: 'Inter', sans-serif; 
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .container { 
+            max-width: 450px; 
+            margin: 0 auto; 
+            display: flex; 
+            flex-direction: column;
+        }
+
+        .grid-docs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: minmax(120px, auto);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .doc-card { 
+            background: #000000; 
+            border: 1px solid #333; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            transition: transform 0.1s; 
+            cursor: pointer;
+        }
+        
+        .doc-card:active { transform: scale(0.96); }
+
+        .img-slot {
+            flex-grow: 1;
+            height: 100px;
+            background-color: #18181b;
+            overflow: hidden;
+        }
+
+        footer {
+            padding-bottom: 50px; 
+            margin-top: 0;
+            display: flex;
+            justify-content: center; /* Centre le bouton plus étroit */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="text-center py-4">
+            <h1 class="text-pink-300 font-bold text-[10px] uppercase tracking-[0.2em]">Documents & Ressources</h1>
+        </header>
+
+        <nav class="grid-docs">
+            <div class="doc-card" onclick="window.location.href='documents_calendrier.html'">
+                <div class="img-slot"><img src="documents_calendrier.jpg" class="w-full h-full"></div>
+                <div class="p-2 text-center bg-[#222222]"><p class="text-[9px] font-bold text-white">Calendrier</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_planning_terrain.html'">
+                <div class="img-slot"><img src="documents_planning_terrain.jpg" class="w-full h-full"></div>
+                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Terrain</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_planning_francais_ce2.html'">
+                <div class="img-slot"><img src="documents_planning_francais_ce2.jpg" class="w-full h-full"></div>
+                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Français CE2</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_planning_maths_ce2.html'">
+                <div class="img-slot"><img src="documents_planning_maths_ce2.jpg" class="w-full h-full"></div>
+                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Maths CE2</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_planning_francais_cm2.html'">
+                <div class="img-slot"><img src="documents_planning_francais_cm2.jpg" class="w-full h-full"></div>
+                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Français CM2</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_planning_maths_cm2.html'">
+                <div class="img-slot"><img src="documents_planning_maths_cm2.jpg" class="w-full h-full"></div>
+                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Maths CM2</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_emploi_du_temps.html'">
+                <div class="img-slot"><img src="documents_emploi_du_temps.jpg" class="w-full h-full"></div>
+                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Emploi du temps</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_planning_services.html'">
+                <div class="img-slot"><img src="documents_planning_services.jpg" class="w-full h-full"></div>
+                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Planning des services</p></div>
+            </div>
+        </nav>
+
+        <footer>
+            <button onclick="window.location.href='index.html'" class="w-full max-w-[200px] bg-[#71bd7b] text-green-950 font-bold py-3 rounded-full text-[11px] shadow-lg active:opacity-80">
+                Accueil
+            </button>
+        </footer>
+    </div>
+</body>
+</html>

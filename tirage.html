@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tirage au Sort</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
+        :root {
+            --primary: #ff637e;
+            --bg: #000000;
+            --text: #ffffff;
+            --card-bg: #222222;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bg-m { background: #dbeafe; color: #1e3a8a; } 
+        .bg-f { background: #fce7f3; color: #831843; } 
+        
+        .level-section { 
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .level-title {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 900;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            width: 100%;
+        }
+
+        .student-item {
+            padding: 8px 2px;
+            border-radius: 10px;
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            text-transform: capitalize;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* MODIFICATION : Fond plus foncé pour les tirés */
+        .drawn {
+            background: #2a2a2a !important; /* Plus sombre pour s'effacer */
+            color: #777777 !important; /* Texte gris plus discret */
+            text-decoration: line-through;
+            opacity: 0.7;
+            border-color: #333;
+        }
+
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 2rem;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #result-container {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border-radius: 50px;
+            margin-bottom: 15px;
+            border: 2px solid #333;
+        }
+
+        #result-display {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .main-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 14px;
+            font-size: 10px;
+            font-weight: 800;
+            border-radius: 50px;
+            text-transform: uppercase;
+        }
+
+        /* Styles Boutons du bas */
+        .btn-nav { font-weight: 800; padding: 14px; border-radius: 50px; font-size: 9px; cursor: pointer; border: none; flex: 1; }
+        .stats { margin-top: 8px; font-size: 0.6rem; color: #aaa; text-transform: uppercase; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div id="result-container">
+            <div id="result-display">PRÊT</div>
+        </div>
+        <button id="draw-btn" class="main-btn" onclick="drawName()">Tirer un prénom</button>
+        <div class="stats" id="counter">--</div>
+    </div>
+
+    <div class="w-full max-w-2xl">
+        <div id="listeContainer"></div>
+
+        <div class="max-w-md mx-auto flex gap-3 mt-8 mb-10">
+            <button class="btn-nav bg-red-500 text-rose-100" onclick="resetDrawing()">RàZ Tirage</button>
+            <button onclick="window.location.href='index.html'" class="btn-nav bg-[#71bd7b] text-green-950">Accueil</button>
+        </div>
+    </div>
+
+    <script>
+        function formatName(fullName) {
+            const parts = fullName.trim().split(" ");
+            return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+        }
+
+        let rawData = JSON.parse(localStorage.getItem('maListeEleves')) || [];
+        let remaining = JSON.parse(localStorage.getItem('remainingStudents')) || rawData.map(el => el.id);
+
+        function saveState() {
+            localStorage.setItem('remainingStudents', JSON.stringify(remaining));
+        }
+
+        function renderList() {
+            const container = document.getElementById('listeContainer');
+            container.innerHTML = "";
+
+            const groupes = {};
+            rawData.forEach(el => {
+                const niv = el.niveau.toUpperCase();
+                if (!groupes[niv]) groupes[niv] = [];
+                groupes[niv].push(el);
+            });
+
+            const nomsNiveaux = Object.keys(groupes).sort();
+
+            nomsNiveaux.forEach(niv => {
+                const section = document.createElement('div');
+                section.className = "level-section";
+                section.innerHTML = `<div class="level-title">${niv}</div>`;
+                
+                const grid = document.createElement('div');
+                grid.className = "student-grid";
+
+                groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
+                    const isDrawn = !remaining.includes(el.id);
+                    const item = document.createElement('div');
+                    item.className = `student-item bg-${el.sexe} ${isDrawn ? 'drawn' : ''}`;
+                    item.innerText = formatName(el.identite);
+                    item.onclick = () => toggleStudent(el.id);
+                    grid.appendChild(item);
+                });
+                
+                section.appendChild(grid);
+                container.appendChild(section);
+            });
+
+            const total = rawData.length;
+            const restants = remaining.length;
+            document.getElementById('counter').innerText = `${restants} restant${restants > 1 ? 's' : ''} / ${total}`;
+            
+            const btn = document.getElementById('draw-btn');
+            if (restants === 0) {
+                btn.disabled = true;
+                btn.innerText = "Session terminée";
+                btn.style.opacity = "0.5";
+            } else {
+                btn.disabled = false;
+                btn.innerText = "Tirer un prénom";
+                btn.style.opacity = "1";
+            }
+        }
+
+        function toggleStudent(id) {
+            if (remaining.includes(id)) {
+                remaining = remaining.filter(item => item !== id);
+            } else {
+                remaining.push(id);
+            }
+            saveState();
+            renderList();
+        }
+
+        function drawName() {
+            if (remaining.length === 0) return;
+            const display = document.getElementById('result-display');
+            const btn = document.getElementById('draw-btn');
+            btn.disabled = true;
+
+            let iterations = 0;
+            const interval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * remaining.length);
+                const tempStudent = rawData.find(s => s.id === remaining[randomIndex]);
+                display.innerText = formatName(tempStudent.identite);
+                iterations++;
+
+                if (iterations > 12) {
+                    clearInterval(interval);
+                    const finalIndex = Math.floor(Math.random() * remaining.length);
+                    const winnerId = remaining.splice(finalIndex, 1)[0];
+                    const winner = rawData.find(s => s.id === winnerId);
+                    display.innerText = formatName(winner.identite);
+                    saveState();
+                    renderList();
+                }
+            }, 60);
+        }
+
+        function resetDrawing() {
+            if(confirm("Remettre tous les élèves en jeu ?")) {
+                remaining = rawData.map(el => el.id);
+                localStorage.removeItem('remainingStudents');
+                document.getElementById('result-display').innerText = "PRÊT";
+                renderList();
+            }
+        }
+
+        renderList();
+    </script>
+</body>
+</html>
