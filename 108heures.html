@@ -23,31 +23,36 @@
         }
         .card-input:checked + .card-label { background: #111827; border-color: #111827; color: #fff; transform: scale(0.98); }
 
-        .level-column { background: #f3f4f6; color: #111827; border-radius: 1.5rem; padding: 12px; margin-bottom: 15px; border: 1px solid #ffffff; }
+        /* DEUX COLONNES MOBILE */
+        .level-column { background: #f3f4f6; color: #111827; border-radius: 1.2rem; padding: 10px; border: 1px solid #ffffff; display: flex; flex-direction: column; }
         
-        /* Jauges sur fond clair */
-        .progress-container { width: 100%; background: #d1d5db; height: 8px; border-radius: 10px; margin: 6px 0 8px 0; overflow: hidden; }
+        .progress-container { width: 100%; background: #d1d5db; height: 7px; border-radius: 10px; margin: 6px 0; overflow: hidden; }
         .progress-bar { height: 100%; transition: width 0.5s ease-in-out; }
 
         .reunion-item { 
-            background: #ffffff; padding: 8px; border-radius: 0.75rem; 
-            margin-bottom: 6px; border-left: 4px solid #db2777;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: #ffffff; padding: 6px; border-radius: 0.6rem; 
+            margin-bottom: 5px; border-left: 3px solid #db2777;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.6rem;
         }
 
         .quota-badge {
-            font-size: 9px; font-weight: 900; padding: 3px 8px; border-radius: 50px;
-            background: #111827; color: #fff;
+            font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 50px;
+            background: #111827; color: #fff; white-space: nowrap;
         }
 
+        /* BOUTONS NAVIGATION (Version originale) */
         .bottom-nav { width: 100%; max-width: 500px; margin: 20px auto 0; padding-bottom: 40px; display: flex; gap: 8px; }
         .nav-btn { font-weight: 900; border-radius: 50px; font-size: 9px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
 
-        /* Inputs sombres sur fond clair */
         .input-field { background: #ffffff; border: 1px solid #9ca3af; color: #111827; border-radius: 0.75rem; padding: 8px; outline: none; font-size: 0.75rem; font-weight: 600; }
-        .input-field:focus { border-color: #111827; }
         
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: none; cursor: pointer; }
+        .toggle-list-btn {
+            width: 100%; font-size: 7px; font-weight: 800; text-transform: uppercase;
+            color: #4b5563; padding: 5px; border: 1px dashed #9ca3af;
+            border-radius: 0.5rem; margin-top: auto;
+        }
+
+        .hidden-list { display: none; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -76,28 +81,20 @@
                     <label><input type="radio" name="cat" value="FORM" class="card-input"><div class="card-label">Form.</div></label>
                     <label><input type="radio" name="cat" value="CONSEIL" class="card-input"><div class="card-label">Conseil</div></label>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="flex flex-col gap-1">
-                        <span class="text-[8px] font-bold text-gray-500 uppercase ml-1">Date :</span>
-                        <input type="date" id="dateReu" class="input-field" required>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <span class="text-[8px] font-bold text-gray-500 uppercase ml-1">Durée :</span>
-                        <div class="flex items-center gap-1 bg-white border border-gray-400 rounded-lg px-2 h-full">
-                            <input type="number" id="h" class="bg-transparent w-full outline-none text-center text-gray-900 font-bold text-xs" min="0" value="1">
-                            <span class="text-gray-400 font-bold">:</span>
-                            <input type="number" id="m" class="bg-transparent w-full outline-none text-center text-gray-900 font-bold text-xs" min="0" max="59" value="0">
-                        </div>
+                    <input type="date" id="dateReu" class="input-field" required>
+                    <div class="flex items-center gap-1 bg-white border border-gray-400 rounded-lg px-2 h-full">
+                        <input type="number" id="h" class="bg-transparent w-full outline-none text-center text-gray-900 font-bold text-xs" min="0" value="1">
+                        <span class="text-gray-400 font-bold">:</span>
+                        <input type="number" id="m" class="bg-transparent w-full outline-none text-center text-gray-900 font-bold text-xs" min="0" max="59" value="0">
                     </div>
                 </div>
-
                 <input type="text" id="comm" placeholder="Commentaire..." class="input-field">
-                <button type="submit" class="bg-indigo-600 text-white font-black py-3 rounded-full uppercase text-[10px] active:scale-95 transition-transform shadow-md">Enregistrer</button>
+                <button type="submit" class="bg-indigo-600 text-white font-black py-3 rounded-full uppercase text-[10px] active:scale-95 transition-transform">Enregistrer</button>
             </form>
         </div>
 
-        <div id="displayContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        <div id="displayContainer" class="grid grid-cols-2 gap-3"></div>
 
         <footer class="bottom-nav">
             <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white uppercase">💾 exporter</button>
@@ -112,7 +109,7 @@
     <script>
         const QUOTAS = { "APC": 36 * 60, "PEDAGO": 48 * 60, "FORM": 18 * 60, "CONSEIL": 6 * 60 };
         const TOTAL_ANNUEL = 108 * 60;
-        const LABELS = { "APC": "APC", "PEDAGO": "Réunions & Suivi", "FORM": "Formations", "CONSEIL": "Conseils d'école" };
+        const LABELS = { "APC": "APC", "PEDAGO": "Réunions", "FORM": "Form.", "CONSEIL": "Conseils" };
 
         let reunions = JSON.parse(localStorage.getItem('mesHeuresReu')) || [];
 
@@ -136,6 +133,18 @@
         function sauvegarder() { localStorage.setItem('mesHeuresReu', JSON.stringify(reunions)); render(); }
         function supprimer(id) { if(confirm("Supprimer ?")) { reunions = reunions.filter(r => r.id !== id); sauvegarder(); } }
 
+        function toggleListe(catKey) {
+            const listDiv = document.getElementById(`list-${catKey}`);
+            const btn = document.getElementById(`btn-${catKey}`);
+            if (listDiv.style.display === "block") {
+                listDiv.style.display = "none";
+                btn.innerText = "Détails";
+            } else {
+                listDiv.style.display = "block";
+                btn.innerText = "Masquer";
+            }
+        }
+
         function render() {
             const container = document.getElementById('displayContainer');
             container.innerHTML = "";
@@ -153,30 +162,32 @@
                 let colorBar = restant <= 0 ? "bg-green-600" : "bg-indigo-600";
 
                 col.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <h3 class="text-[10px] font-black uppercase text-gray-900">${LABELS[catKey]}</h3>
-                        <span class="quota-badge">RESTE : ${formatDuree(restant)}</span>
+                    <div class="mb-1">
+                        <div class="flex flex-wrap justify-between items-center gap-1 mb-1">
+                            <h3 class="text-[9px] font-black uppercase text-gray-900 leading-tight">${LABELS[catKey]}</h3>
+                            <span class="quota-badge">RESTE : ${formatDuree(restant)}</span>
+                        </div>
+                        <div class="progress-container"><div class="progress-bar ${colorBar}" style="width: ${pourcentage}%"></div></div>
+                        <p class="text-[8px] font-extrabold text-gray-500 uppercase">${formatDuree(totalFait)} / ${formatDuree(QUOTAS[catKey])}</p>
                     </div>
-                    <div class="progress-container"><div class="progress-bar ${colorBar}" style="width: ${pourcentage}%"></div></div>
-                    <p class="text-[8px] font-extrabold text-gray-500 uppercase mb-3">${formatDuree(totalFait)} / ${formatDuree(QUOTAS[catKey])}</p>
+                    <button id="btn-${catKey}" onclick="toggleListe('${catKey}')" class="toggle-list-btn">Détails</button>
+                    <div id="list-${catKey}" class="hidden-list"></div>
                 `;
 
-                const list = document.createElement('div');
+                const listDiv = col.querySelector(`#list-${catKey}`);
                 reuCat.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(r => {
                     const dateFmt = new Date(r.date).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
-                    list.innerHTML += `
-                        <div class="reunion-item flex justify-between items-center text-[10px]">
+                    listDiv.innerHTML += `
+                        <div class="reunion-item flex justify-between items-start">
                             <div class="flex-1 overflow-hidden">
-                                <div class="flex gap-2">
-                                    <span class="font-black text-pink-700">${dateFmt}</span>
-                                    <span class="font-bold text-gray-900">${formatDuree(r.minutes)}</span>
-                                </div>
-                                <div class="text-gray-500 italic truncate font-medium">${r.comm || ''}</div>
+                                <span class="font-black text-pink-700">${dateFmt}</span> - 
+                                <span class="font-bold text-gray-900">${formatDuree(r.minutes)}</span>
+                                <div class="text-gray-500 italic truncate">${r.comm || ''}</div>
                             </div>
-                            <button onclick="supprimer(${r.id})" class="text-lg text-gray-400 pl-2 font-black">&times;</button>
+                            <button onclick="supprimer(${r.id})" class="text-gray-400 font-black ml-1 text-sm leading-none">&times;</button>
                         </div>`;
                 });
-                col.appendChild(list); container.appendChild(col);
+                container.appendChild(col);
             });
 
             const globalReste = TOTAL_ANNUEL - minutesGlobales;
@@ -192,7 +203,7 @@
         function exportData() {
             const blob = new Blob([JSON.stringify(reunions, null, 2)], { type: 'text/plain' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `heures.txt`; a.click();
+            a.download = `heures_108h.txt`; a.click();
         }
 
         document.getElementById('importFile').addEventListener('change', function(e) {
@@ -201,7 +212,7 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (Array.isArray(data) && confirm("Importer ?")) { reunions = data; sauvegarder(); }
+                    if (Array.isArray(data) && confirm("Importer les données ?")) { reunions = data; sauvegarder(); }
                 } catch (err) { alert("Erreur."); }
             };
             reader.readAsText(file);
