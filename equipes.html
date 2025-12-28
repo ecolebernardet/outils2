@@ -50,9 +50,7 @@
         .team-title { font-weight: 900; font-size: 0.65rem; color: #fff; text-transform: uppercase; }
         .team-stats { font-size: 0.45rem; color: #aaa; display: block; line-height: 1.4; }
         
-        .tag { font-size: 0.45rem; font-weight: 900; margin-right: 5px; padding: 2px 4px; border-radius: 3px; color: #000; }
-        .tag-ce2 { background: #fbbf24; } 
-        .tag-cm2 { background: #4ade80; }
+        .tag { font-size: 0.45rem; font-weight: 900; margin-right: 5px; padding: 2px 4px; border-radius: 3px; color: #000; min-width: 25px; text-align: center; }
         
         .name-f { color: var(--pink); } 
         .name-g { color: var(--blue-light); }
@@ -93,6 +91,11 @@
         'cyan': '#06b6d4', 'sky': '#0ea5e9', 'blue': '#3b82f6', 'indigo': '#6366f1',
         'violet': '#8b5cf6', 'purple': '#a855f7', 'fuchsia': '#d946ef', 'pink': '#ec4899',
         'rose': '#f43f5e', 'gray': '#6b7280'
+    };
+
+    const couleursDecidees = {
+        "CP": "#ec4899", "CE1": "#3b82f6", "CE2": "#eab308", 
+        "CM1": "#ef4444", "CM2": "#22c55e", "AUTRE": "#a855f7"
     };
 
     let selectedNumTeams = 4;
@@ -151,16 +154,7 @@
     function renderAttendance() {
         const container = document.getElementById('attendance-container');
         container.innerHTML = '';
-        
-        // Palette dynamique
         const paletteNiveaux = JSON.parse(localStorage.getItem('palette_niveaux')) || {};
-        
-        // Couleurs forcées si la palette est vide
-        const couleursDecidees = {
-            "CP": "#ec4899", "CE1": "#3b82f6", "CE2": "#eab308", 
-            "CM1": "#ef4444", "CM2": "#22c55e", "AUTRE": "#a855f7"
-        };
-
         const groupes = {};
         ALL_STUDENTS.forEach(s => {
             const niv = s.niveau.trim().toUpperCase();
@@ -180,7 +174,6 @@
         niveauxTries.forEach(niv => {
             const levelSection = document.createElement('div');
             const couleurNiveau = paletteNiveaux[niv] || paletteNiveaux[niv.toLowerCase()] || couleursDecidees[niv] || '#555';
-            
             levelSection.innerHTML = `<div class="level-label" style="color: ${couleurNiveau} !important;">${niv}</div>`;
             const grid = document.createElement('div');
             grid.className = "attendance-grid";
@@ -204,12 +197,17 @@
         });
     }
 
-    const getStats = (team) => ({
-        f: team.filter(s => s.sexe.toLowerCase().startsWith('f')).length,
-        ce2: team.filter(s => s.niveau.toUpperCase().includes('CE2')).length,
-        cm2: team.filter(s => s.niveau.toUpperCase().includes('CM2')).length,
-        total: team.length
-    });
+    const getStats = (team) => {
+        const stats = { f: 0, total: team.length };
+        // On calcule dynamiquement pour chaque niveau présent
+        Object.keys(couleursDecidees).forEach(n => stats[n.toLowerCase()] = 0);
+        team.forEach(s => {
+            if(s.sexe.toLowerCase().startsWith('f')) stats.f++;
+            const niv = s.niveau.toUpperCase();
+            if(stats[niv.toLowerCase()] !== undefined) stats[niv.toLowerCase()]++;
+        });
+        return stats;
+    };
 
     function generateAndFix() {
         let presents = ALL_STUDENTS.filter(s => !absents.has(String(s.id)));
@@ -219,6 +217,7 @@
         presents.sort(() => Math.random() - 0.5);
         presents.forEach((s, idx) => teams[idx % selectedNumTeams].push(s));
 
+        // Simplification de l'équilibrage pour tous les niveaux
         let improved = true;
         let count = 0;
         while(improved && count < 100) {
@@ -227,13 +226,25 @@
                 for(let j=0; j < teams.length; j++) {
                     if(i === j) continue;
                     let sI = getStats(teams[i]), sJ = getStats(teams[j]);
-                    if (Math.abs(sI.f-sJ.f)>1 || Math.abs(sI.ce2-sJ.ce2)>1) {
+                    // On vérifie le déséquilibre sur le genre et tous les niveaux
+                    let needsFix = Math.abs(sI.f - sJ.f) > 1;
+                    if(!needsFix) {
+                        for(let n in couleursDecidees) {
+                            if(Math.abs(sI[n.toLowerCase()] - sJ[n.toLowerCase()]) > 1) { needsFix = true; break; }
+                        }
+                    }
+
+                    if (needsFix) {
                         for(let x=0; x<teams[i].length; x++) {
                             for(let y=0; y<teams[j].length; y++) {
-                                let oldDiff = Math.abs(sI.f-sJ.f) + Math.abs(sI.ce2-sJ.ce2);
+                                let oldDiff = Math.abs(sI.f-sJ.f);
+                                for(let n in couleursDecidees) oldDiff += Math.abs(sI[n.toLowerCase()] - sJ[n.toLowerCase()]);
+                                
                                 [teams[i][x], teams[j][y]] = [teams[j][y], teams[i][x]];
                                 let nI = getStats(teams[i]), nJ = getStats(teams[j]);
-                                let newDiff = Math.abs(nI.f-nJ.f) + Math.abs(nI.ce2-nJ.ce2);
+                                let newDiff = Math.abs(nI.f-nJ.f);
+                                for(let n in couleursDecidees) newDiff += Math.abs(nI[n.toLowerCase()] - nJ[n.toLowerCase()]);
+
                                 if(newDiff < oldDiff) { improved = true; break; }
                                 else { [teams[i][x], teams[j][y]] = [teams[j][y], teams[i][x]]; }
                             }
@@ -249,21 +260,32 @@
 
     function renderTeams(teams) {
         const results = document.getElementById('results');
+        const paletteNiveaux = JSON.parse(localStorage.getItem('palette_niveaux')) || {};
         results.innerHTML = '';
+        
         teams.forEach((team, i) => {
             team.sort((a, b) => a.niveau.localeCompare(b.niveau));
             const s = getStats(team);
+            
+            // Construction des stats du header dynamiquement
+            let statsText = `${s.f}F/${s.total-s.f}G`;
+            Object.keys(couleursDecidees).forEach(n => {
+                if(s[n.toLowerCase()] > 0) statsText += ` • ${s[n.toLowerCase()]}${n}`;
+            });
+
             let html = `<div class="team-card">
                 <div class="team-header">
                     <span class="team-title">Équipe ${i+1}</span>
-                    <span class="team-stats">${s.f}F/${s.total-s.f}G • ${s.ce2}CE2/${s.cm2}CM2</span>
+                    <span class="team-stats">${statsText}</span>
                 </div>`;
+            
             team.forEach(eleve => {
                 const niv = eleve.niveau.toUpperCase();
-                const isCE2 = niv.includes('CE2');
                 const p = eleve.identite.split(" ")[0];
+                const bgTag = paletteNiveaux[niv] || paletteNiveaux[niv.toLowerCase()] || couleursDecidees[niv] || '#555';
+                
                 html += `<div class="flex items-center mb-1 text-[0.65rem] font-bold">
-                    <span class="tag ${isCE2?'tag-ce2':'tag-cm2'}">${isCE2?'CE2':'CM2'}</span>
+                    <span class="tag" style="background-color: ${bgTag}">${niv}</span>
                     <span class="${eleve.sexe.toLowerCase().startsWith('f')?'name-f':'name-g'}">${p}</span>
                 </div>`;
             });
