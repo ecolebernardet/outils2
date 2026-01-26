@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Environnement Gynzy Style</title>
+    <style>
+        /* --- CHARTE GRAPHIQUE GYNZY --- */
+        :root {
+            --bg-color: #eef2f5;
+            --widget-bg: #ffffff;
+            --primary-color: #4a90e2; /* Bleu Gynzy */
+            --text-color: #333;
+            --shadow: 0 8px 24px rgba(149, 157, 165, 0.2);
+            --border-radius: 18px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-color);
+            overflow: hidden; /* Empêche le scroll de la page entière */
+        }
+
+        /* --- PLATEAU DE TRAVAIL --- */
+        #board {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* --- STYLE DES WIDGETS --- */
+        .widget {
+            position: absolute;
+            background: var(--widget-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            min-width: 250px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+            z-index: 1;
+        }
+
+        .widget:active {
+            z-index: 1000; /* Passe au premier plan quand on le bouge */
+            border-color: var(--primary-color);
+        }
+
+        .widget-header {
+            padding: 12px 15px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fcfcfc;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .widget-title {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            font-size: 20px;
+            color: #ccc;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #ff5f56;
+        }
+
+        .widget-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Spécifique au widget texte */
+        .widget-text-area {
+            width: 100%;
+            height: 120px;
+            border: none;
+            outline: none;
+            resize: both;
+            font-family: inherit;
+            font-size: 1.1em;
+            color: #555;
+            background: transparent;
+        }
+
+        /* Spécifique au widget météo (Simulation) */
+        .weather-display {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .weather-temp {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        /* --- BARRE D'OUTILS (BAS) --- */
+        #toolbar {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 9999;
+        }
+
+        .tool-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-btn:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+        }
+
+        .tool-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="board">
+        </div>
+
+    <div id="toolbar">
+        <button class="tool-btn" onclick="createWidget('text')">
+            <span>+</span> Bloc Texte
+        </button>
+        <button class="tool-btn" onclick="createWidget('weather')">
+            <span>+</span> Météo
+        </button>
+    </div>
+
+    <script>
+        let widgetCount = 0;
+
+        function createWidget(type) {
+            widgetCount++;
+            const board = document.getElementById('board');
+            
+            // Création de l'élément div principal
+            const widget = document.createElement('div');
+            widget.className = 'widget';
+            // Position initiale décalée pour ne pas les superposer tous au même endroit
+            widget.style.left = (50 + (widgetCount * 20)) + 'px';
+            widget.style.top = (50 + (widgetCount * 20)) + 'px';
+            
+            let title = "";
+            let innerHTML = "";
+
+            if (type === 'text') {
+                title = "Note de classe";
+                innerHTML = `<textarea class="widget-text-area" placeholder="Tapez votre texte ici..."></textarea>`;
+            } else if (type === 'weather') {
+                title = "Météo locale";
+                innerHTML = `
+                    <div class="weather-display">
+                        <div class="weather-temp">12°C</div>
+                        <div style="color: #888;">☁️ Partiellement couvert</div>
+                        <div style="font-size: 0.8em; margin-top: 10px;">Chambéry, France</div>
+                    </div>`;
+            }
+
+            widget.innerHTML = `
+                <div class="widget-header">
+                    <span class="widget-title">${title}</span>
+                    <span class="close-btn" onclick="this.closest('.widget').remove()">×</span>
+                </div>
+                <div class="widget-content">
+                    ${innerHTML}
+                </div>
+            `;
+
+            // Rendre le widget déplaçable
+            makeDraggable(widget);
+            
+            board.appendChild(widget);
+        }
+
+        // Fonction de Drag & Drop
+        function makeDraggable(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            const header = elmnt.querySelector('.widget-header');
+            
+            if (header) {
+                header.onmousedown = dragMouseDown;
+            } else {
+                elmnt.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+                // Si on clique sur le bouton fermer, on ne drag pas
+                if (e.target.className === 'close-btn') return;
+                
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+                
+                // Mettre le widget au premier plan au clic
+                document.querySelectorAll('.widget').forEach(w => w.style.zindex = 1);
+                elmnt.style.zIndex = 1000;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        // Créer un premier widget par défaut à l'ouverture
+        window.onload = () => {
+            createWidget('text');
+        };
+    </script>
+</body>
+</html>
