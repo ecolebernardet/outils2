@@ -3,267 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Environnement Gynzy Style</title>
-    <style>
-        /* --- CHARTE GRAPHIQUE GYNZY --- */
+    <title>Le Bureau du Prof</title>
+<style>
+        /* --- CHARTE GRAPHIQUE --- */
         :root {
             --bg-color: #eef2f5;
             --widget-bg: #ffffff;
-            --primary-color: #4a90e2; /* Bleu Gynzy */
+            --primary-color: #4a90e2;
             --text-color: #333;
             --shadow: 0 8px 24px rgba(149, 157, 165, 0.2);
             --border-radius: 18px;
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
             background-color: var(--bg-color);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            color: var(--text-color);
-            overflow: hidden; /* Empêche le scroll de la page entière */
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
         }
 
-        /* --- PLATEAU DE TRAVAIL --- */
-        #board {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-        }
+        #board { width: 100vw; height: 100vh; position: relative; }
 
-        /* --- STYLE DES WIDGETS --- */
+        /* --- WIDGETS --- */
         .widget {
             position: absolute;
             background: var(--widget-bg);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            min-width: 250px;
-            min-height: 150px;
+            min-width: 300px;
             display: flex;
             flex-direction: column;
-            border: 2px solid transparent;
-            transition: border-color 0.3s ease;
             z-index: 1;
-        }
-
-        .widget:active {
-            z-index: 1000; /* Passe au premier plan quand on le bouge */
-            border-color: var(--primary-color);
+            border: 2px solid transparent;
+            height: auto;
+            outline: none; /* Évite le contour bleu par défaut du navigateur */
         }
 
         .widget-header {
-            padding: 12px 15px;
+            padding: 10px 15px;
             cursor: move;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #fcfcfc;
-            border-top-left-radius: var(--border-radius);
-            border-top-right-radius: var(--border-radius);
-            border-bottom: 1px solid #f0f0f0;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            border-bottom: 1px solid #eee;
         }
 
-        .widget-title {
-            font-weight: 700;
-            color: var(--primary-color);
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .widget-title { font-weight: 700; color: var(--primary-color); font-size: 0.85em; text-transform: uppercase; }
+        .close-btn { cursor: pointer; font-size: 20px; color: #ccc; }
+        .close-btn:hover { color: #ff5f56; }
+
+        .widget-content { padding: 10px; flex-grow: 1; }
+
+        /* --- ÉDITEUR DE TEXTE AVEC BARRE DYNAMIQUE --- */
+        .editor-container { display: flex; flex-direction: column; border: 1px solid #eee; border-radius: 8px; background: white; }
+        
+        /* La barre est cachée par défaut */
+        .editor-toolbar { 
+            display: none; 
+            gap: 4px; padding: 5px; 
+            background: #f8f9fa; border-bottom: 1px solid #eee; flex-wrap: wrap; 
         }
 
-        .close-btn {
-            cursor: pointer;
-            font-size: 20px;
-            color: #ccc;
-            line-height: 1;
-        }
-
-        .close-btn:hover {
-            color: #ff5f56;
-        }
-
-        .widget-content {
-            padding: 15px;
-            flex-grow: 1;
+        /* Elle s'affiche quand on clique dans le widget */
+        .widget:focus-within .editor-toolbar {
             display: flex;
-            flex-direction: column;
         }
 
-        /* Spécifique au widget texte */
-        .widget-text-area {
-            width: 100%;
-            height: 120px;
-            border: none;
-            outline: none;
-            resize: both;
-            font-family: inherit;
-            font-size: 1.1em;
-            color: #555;
-            background: transparent;
+        .editor-toolbar button, .editor-toolbar select, .editor-toolbar input { 
+            padding: 2px 6px; cursor: pointer; border: 1px solid #ddd; background: white; border-radius: 4px; font-size: 12px;
+            height: 24px; box-sizing: border-box;
         }
 
-        /* Spécifique au widget météo (Simulation) */
-        .weather-display {
-            text-align: center;
-            padding: 10px;
+        .editor-content { 
+            padding: 10px; min-height: 120px; min-width: 280px; outline: none; 
+            overflow: auto; text-align: left; resize: both; 
         }
 
-        .weather-temp {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin: 0;
-            color: var(--primary-color);
-        }
+        /* --- STYLES SPÉCIFIQUES --- */
+        .calendar-page { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: white; text-align: center; }
+        .calendar-header { background: #ff4757; color: white; padding: 5px; font-weight: bold; }
+        .calendar-day-name { color: #ff4757; font-weight: 600; margin-top: 10px; text-transform: capitalize; }
+        .calendar-day-number { font-size: 3em; font-weight: 800; color: var(--text-color); }
+        .calendar-month { margin-bottom: 10px; text-transform: capitalize; color: #888; }
+        
+        .clock-time { font-size: 3em; font-weight: 800; color: var(--primary-color); text-align: center; font-family: monospace; padding: 10px; }
+        .clock-seconds { font-size: 0.4em; color: #888; margin-left: 5px; }
 
-        /* --- BARRE D'OUTILS (BAS) --- */
+        /* --- TOOLBAR BAS --- */
         #toolbar {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            padding: 12px 30px;
-            border-radius: 50px;
-            display: flex;
-            gap: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            z-index: 9999;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: white; padding: 10px 25px; border-radius: 50px;
+            display: flex; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 9999;
         }
-
         .tool-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.2s, background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            background: var(--primary-color); color: white; border: none;
+            padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; transition: 0.2s;
         }
-
-        .tool-btn:hover {
-            background: #357abd;
-            transform: translateY(-2px);
-        }
-
-        .tool-btn:active {
-            transform: translateY(0);
-        }
+        .tool-btn:hover { background: #357abd; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
-    <div id="board">
-        </div>
+    <div id="board"></div>
 
     <div id="toolbar">
-        <button class="tool-btn" onclick="createWidget('text')">
-            <span>+</span> Bloc Texte
-        </button>
-        <button class="tool-btn" onclick="createWidget('weather')">
-            <span>+</span> Météo
-        </button>
+        <button class="tool-btn" onclick="createWidget('text')"><span>+</span> Texte</button>
+        <button class="tool-btn" onclick="createWidget('homework')"><span>📝</span> Devoirs</button>
+        <button class="tool-btn" onclick="createWidget('date')"><span>📅</span> Date</button>
+        <button class="tool-btn" onclick="createWidget('time')"><span>🕒</span> Heure</button>
+        <button class="tool-btn" onclick="clearBoard()" style="background: #ff4757;"><span>×</span> Effacer</button>
     </div>
+
+    <template id="template-text">
+        <div class="editor-container">
+            <div class="editor-toolbar">
+                <button onclick="format('bold')">G</button>
+                <button onclick="format('italic')">I</button>
+                <button onclick="format('underline')">S</button>
+                <input type="color" onchange="format('foreColor', this.value)" title="Couleur texte">
+                <input type="color" onchange="format('backColor', this.value)" title="Surligner" value="#ffff00">
+                <select onchange="format('fontSize', this.value)">
+                    <option value="3">Taille</option>
+                    <option value="1">Petit</option>
+                    <option value="3">Normal</option>
+                    <option value="5">Grand</option>
+                </select>
+            </div>
+            <div class="editor-content" contenteditable="true" oninput="saveBoard()"></div>
+        </div>
+    </template>
+
+    <template id="template-homework">
+        <div class="editor-container">
+            <div class="editor-toolbar">
+                <button onclick="format('bold')">G</button>
+                <button onclick="format('italic')">I</button>
+                <button onclick="format('underline')">S</button>
+                <input type="color" onchange="format('foreColor', this.value)" title="Couleur texte">
+                <input type="color" onchange="format('backColor', this.value)" title="Surligner" value="#ffff00">
+                <select onchange="format('fontSize', this.value)">
+                    <option value="3">Taille</option>
+                    <option value="1">Petit</option>
+                    <option value="3">Normal</option>
+                    <option value="5">Grand</option>
+                </select>
+            </div>
+            <div class="editor-content" contenteditable="true" oninput="saveBoard()">
+                <u><span style="color: red; font-size: 24px; font-weight: bold;">Pour date</span></u><br>
+				<p></p>
+				<span style="color: #f7639f; font-size: 22px; font-weight: bold;">&nbsp;&nbsp;&nbsp;CE2 =</span>
+				<p></p>
+                <span style="color: #12a2e0; font-size: 22px; font-weight: bold;">&nbsp;&nbsp;&nbsp;CM2 =</span>
+				<p></p>
+                <span style="color: #086e23; font-size: 22px; font-weight: bold;">&nbsp;&nbsp;&nbsp;TOUS =</span><br>
+	        </div>
+    </template>
+
+    <template id="template-date">
+        <div class="calendar-page">
+            <div class="calendar-header"><span class="calendar-year"></span></div>
+            <div class="calendar-body">
+                <div class="calendar-day-name"></div>
+                <div class="calendar-day-number"></div>
+                <div class="calendar-month"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="template-time">
+        <div class="clock-time"><span class="clock-hm">00:00</span><span class="clock-seconds">00</span></div>
+    </template>
 
     <script>
         let widgetCount = 0;
 
-        function createWidget(type) {
+        function format(command, value = null) {
+            document.execCommand(command, false, value);
+            saveBoard();
+        }
+
+        function saveBoard() {
+            const widgets = [];
+            document.querySelectorAll('.widget').forEach(w => {
+                const editor = w.querySelector('.editor-content');
+                widgets.push({
+                    type: w.dataset.type,
+                    top: w.style.top, left: w.style.left, zIndex: w.style.zIndex,
+                    content: editor ? editor.innerHTML : null
+                });
+            });
+            localStorage.setItem('bureauProfData', JSON.stringify(widgets));
+        }
+
+        function loadBoard() {
+            const data = localStorage.getItem('bureauProfData');
+            if (data) {
+                JSON.parse(data).forEach(wData => {
+                    const w = createWidget(wData.type, false);
+                    if (w) {
+                        w.style.top = wData.top; w.style.left = wData.left; w.style.zIndex = wData.zIndex;
+                        const editor = w.querySelector('.editor-content');
+                        if (editor && wData.content) editor.innerHTML = wData.content;
+                    }
+                });
+            } else { createWidget('text'); }
+        }
+
+        function createWidget(type, autoSave = true) {
             widgetCount++;
-            const board = document.getElementById('board');
-            
-            // Création de l'élément div principal
+            const template = document.getElementById(`template-${type}`);
+            if (!template) return;
+
             const widget = document.createElement('div');
             widget.className = 'widget';
-            // Position initiale décalée pour ne pas les superposer tous au même endroit
+            widget.dataset.type = type;
             widget.style.left = (50 + (widgetCount * 20)) + 'px';
             widget.style.top = (50 + (widgetCount * 20)) + 'px';
+
+            const titles = { 'text': 'Note', 'homework': 'Devoirs', 'date': 'Agenda', 'time': 'Horloge' };
             
-            let title = "";
-            let innerHTML = "";
-
-            if (type === 'text') {
-                title = "Note de classe";
-                innerHTML = `<textarea class="widget-text-area" placeholder="Tapez votre texte ici..."></textarea>`;
-            } else if (type === 'weather') {
-                title = "Météo locale";
-                innerHTML = `
-                    <div class="weather-display">
-                        <div class="weather-temp">12°C</div>
-                        <div style="color: #888;">☁️ Partiellement couvert</div>
-                        <div style="font-size: 0.8em; margin-top: 10px;">Chambéry, France</div>
-                    </div>`;
-            }
-
             widget.innerHTML = `
                 <div class="widget-header">
-                    <span class="widget-title">${title}</span>
-                    <span class="close-btn" onclick="this.closest('.widget').remove()">×</span>
+                    <span class="widget-title">${titles[type] || 'Widget'}</span>
+                    <span class="close-btn" onclick="this.closest('.widget').remove(); saveBoard();">×</span>
                 </div>
-                <div class="widget-content">
-                    ${innerHTML}
-                </div>
+                <div class="widget-content"></div>
             `;
 
-            // Rendre le widget déplaçable
+            const contentClone = template.content.cloneNode(true);
+            
+            if (type === 'date') {
+                const now = new Date();
+                contentClone.querySelector('.calendar-year').textContent = now.getFullYear();
+                contentClone.querySelector('.calendar-day-name').textContent = now.toLocaleDateString('fr-FR', {weekday:'long'});
+                contentClone.querySelector('.calendar-day-number').textContent = now.getDate();
+                contentClone.querySelector('.calendar-month').textContent = now.toLocaleDateString('fr-FR', {month:'long'});
+            } else if (type === 'time') {
+                setTimeout(() => updateClock(widget), 10);
+            }
+
+            widget.querySelector('.widget-content').appendChild(contentClone);
             makeDraggable(widget);
-            
-            board.appendChild(widget);
+            document.getElementById('board').appendChild(widget);
+
+            if (autoSave) saveBoard();
+            return widget;
         }
 
-        // Fonction de Drag & Drop
+        function updateClock(widget) {
+            function tick() {
+                if (!document.body.contains(widget)) return;
+                const now = new Date();
+                const hDisplay = widget.querySelector('.clock-hm');
+                const sDisplay = widget.querySelector('.clock-seconds');
+                if(hDisplay) hDisplay.textContent = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+                if(sDisplay) sDisplay.textContent = now.getSeconds().toString().padStart(2,'0');
+                setTimeout(tick, 1000);
+            }
+            tick();
+        }
+
         function makeDraggable(elmnt) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             const header = elmnt.querySelector('.widget-header');
-            
-            if (header) {
-                header.onmousedown = dragMouseDown;
-            } else {
-                elmnt.onmousedown = dragMouseDown;
-            }
-
-            function dragMouseDown(e) {
-                // Si on clique sur le bouton fermer, on ne drag pas
-                if (e.target.className === 'close-btn') return;
+            header.onmousedown = (e) => {
+                if (e.target.className === 'close-btn' || e.target.closest('.editor-toolbar')) return;
                 
-                e = e || window.event;
-                e.preventDefault();
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
-                
-                // Mettre le widget au premier plan au clic
-                document.querySelectorAll('.widget').forEach(w => w.style.zindex = 1);
-                elmnt.style.zIndex = 1000;
-            }
+                document.querySelectorAll('.widget').forEach(w => w.style.zIndex = "1");
+                elmnt.style.zIndex = "1000";
 
-            function elementDrag(e) {
-                e = e || window.event;
-                e.preventDefault();
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-            }
+                let pos3 = e.clientX, pos4 = e.clientY;
+                document.onmousemove = (e) => {
+                    let pos1 = pos3 - e.clientX, pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX; pos4 = e.clientY;
+                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                };
+                document.onmouseup = () => { document.onmousemove = null; saveBoard(); };
+            };
+        }
 
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
+        function clearBoard() {
+            if (confirm("Effacer tout le bureau ?")) {
+                document.querySelectorAll('.widget').forEach(w => w.remove());
+                localStorage.removeItem('bureauProfData');
+                widgetCount = 0;
             }
         }
 
-        // Créer un premier widget par défaut à l'ouverture
-        window.onload = () => {
-            createWidget('text');
-        };
+        window.onload = loadBoard;
     </script>
 </body>
 </html>
