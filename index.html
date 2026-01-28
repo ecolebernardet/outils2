@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Le Bureau du Prof</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/dist/opendyslexic.min.css">
+
     <style>
         /* --- CHARTE GRAPHIQUE --- */
         :root {
@@ -45,11 +49,7 @@
         .widget[data-type="homework"]:focus-within { border-color: #ff4757; }
         .widget[data-type="iframe"]:focus-within { border-color: #2bcbba; }
 
-        /* --- CONFIGURATION SPECIFIQUE AGENDA & HORLOGE (RESIZABLE) --- */
-        .widget[data-type="date"], .widget[data-type="time"] { 
-            min-width: unset; 
-            width: auto; 
-        }
+        .widget[data-type="date"], .widget[data-type="time"] { min-width: unset; width: auto; }
 
         .widget[data-type="date"] .editor-container,
         .widget[data-type="time"] .editor-container {
@@ -85,7 +85,6 @@
 
         .widget-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* --- ÉDITEUR --- */
         .editor-container { 
             display: flex; flex-direction: column; border: 1px solid #eee; border-radius: 8px; background: white; 
             flex-grow: 1; overflow: hidden; resize: both; min-width: 280px; min-height: 120px;
@@ -99,23 +98,20 @@
         
         .editor-content { padding: 10px; outline: none; overflow: auto; text-align: left; flex-grow: 1; }
 
-        /* --- INTERFACE MENU --- */
         #toolbar-container { position: fixed; bottom: 30px; left: 30px; display: flex; flex-direction: column; align-items: flex-start; z-index: 9999; }
         #tools-menu { display: none; background: #1F1F21; border-radius: 12px; padding: 10px; box-shadow: var(--shadow); margin-bottom: 15px; flex-direction: column; gap: 8px; min-width: 180px; border: 1px solid #eee; position: relative; }
         #tools-menu.active { display: flex; }
         
         #undo-btn { position: fixed; bottom: 30px; right: 30px; background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; z-index: 9999; box-shadow: var(--shadow); }
         .tool-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; width: 100%; white-space: nowrap; }
-		.tool-btn2 { background: #dddddd; color: black; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; width: 100%; white-space: nowrap; }
+        .tool-btn2 { background: #dddddd; color: black; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; width: 100%; white-space: nowrap; }
         #main-tool-btn { background: #333; width: 200px; justify-content: center; }
 
-		.exit-fs-btn { display: none; position: absolute; top: 10px; right: 10px; z-index: 99999; background: rgba(0, 0, 0, 0.5);
-			color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
-			
-		:fullscreen .exit-fs-btn { display: block; }
-		:-webkit-full-screen .exit-fs-btn { display: block; }
+        .exit-fs-btn { display: none; position: absolute; top: 10px; right: 10px; z-index: 99999; background: rgba(0, 0, 0, 0.5);
+            color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+            
+        :fullscreen .exit-fs-btn { display: block; }
 
-        /* --- SOUS-MENU FONDS --- */
         #bg-submenu {
             display: none; position: absolute; left: 105%; bottom: 0; background: white; border-radius: 12px; padding: 12px;
             box-shadow: var(--shadow); grid-template-columns: repeat(3, 1fr); gap: 10px; min-width: 240px; border: 1px solid #eee;
@@ -124,7 +120,6 @@
         .bg-thumb { width: 70px; height: 50px; border-radius: 6px; border: 2px solid #eee; cursor: pointer; background-size: cover; background-position: center; transition: 0.2s; }
         .bg-thumb:hover { transform: scale(1.05); border-color: var(--primary-color); }
         
-        /* --- HORLOGE & CALENDRIER --- */
         .calendar-page { 
             width: 100%; height: 100%; display: flex; flex-direction: column; border: 1px solid #ced4da; 
             border-radius: 8px; overflow: hidden; background: white; text-align: center; position: relative;
@@ -135,7 +130,6 @@
         .calendar-header { background: #D17B6B; height: 20%; min-height: 30px; border-bottom: 2px solid #D17B6B; margin-bottom: 5px; }
         .calendar-body { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 5px; }
 
-        /* Tailles de police fluides (cqw) */
         .calendar-day-name { font-size: 12cqw; font-weight: 700; color: #333; text-transform: lowercase; }
         .calendar-day-number { font-size: 35cqw; font-weight: 800; color: #2c3e50; line-height: 1em; margin: 2cqw 0; }
         .calendar-month { font-size: 15cqw; font-weight: 600; color: #333; }
@@ -143,17 +137,12 @@
         .clock-time { font-size: 25cqw; font-weight: 800; color: var(--primary-color); font-family: monospace; display: flex; align-items: baseline; justify-content: center; width: 100%; }
         .clock-seconds { font-size: 0.4em; color: #888; margin-left: 2cqw; }
 
-        /* MODALE */
         #modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:20000; justify-content:center; align-items:center; }
         .modal-content { background:white; padding:30px; border-radius:var(--border-radius); box-shadow:var(--shadow); text-align:center; max-width:400px; width:90%; }
         .modal-content button { padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: transform 0.1s; }
-        .modal-content button:active { transform: scale(0.95); }
         .modal-content .btn-cancel { border: 1px solid #ddd; background: #f8f9fa; color: var(--text-color); }
         .modal-content .btn-confirm { border: none; background: #ff4757; color: white; }
     </style>
-    
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon.png">
 </head>
 <body>
 
@@ -166,7 +155,7 @@
             <button class="tool-btn" onclick="createWidget('date'); toggleMenu()" style="background: #E09231;"><span>📅</span> Agenda</button>
             <button class="tool-btn" onclick="createWidget('time'); toggleMenu()" style="background: #81D674;"><span>🕒</span> Horloge</button>
             <button class="tool-btn" onclick="createWidget('iframe'); toggleMenu()" style="background: #6BC8CF;"><span>💻</span> Fenêtre Web</button>
-			<button class="tool-btn" onclick="createWidget('outilsprofs'); toggleMenu()" style="background: #7983D4;"><span>🎒</span>OutilsProfs</button>
+            <button class="tool-btn" onclick="createWidget('outilsprofs'); toggleMenu()" style="background: #7983D4;"><span>🎒</span> OutilsProfs</button>
             
             <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 5px 0;">
             <button class="tool-btn" style="background: #9b59b6;" onclick="toggleSubMenu(event)"><span>🖼️</span> Choisir fond ❯</button>
@@ -185,7 +174,6 @@
             <button class="tool-btn2" onclick="exportConfig()"><span>💾</span> Exporter config</button>
             <button class="tool-btn2" onclick="document.getElementById('import-input').click()"><span>📂</span> Importer config</button>
             <input type="file" id="import-input" style="display:none" accept=".json" onchange="importConfig(this)">
-            
             <button class="tool-btn2" onclick="clearBoard(); toggleMenu()" style="background: #ED8595; margin-top:5px;"><span>❌</span> Effacer tout</button>
         </div>
         <button id="main-tool-btn" class="tool-btn" onclick="toggleMenu()">MENU</button>
@@ -205,15 +193,42 @@
     </div>
 
     <script type="text/html" id="toolbar-html">
-        <div class="editor-toolbar">
-            <button onclick="format('bold')">G</button><button onclick="format('italic')">I</button><button onclick="format('underline')">S</button>
-            <input type="color" onchange="format('foreColor', this.value)" title="Texte">
-            <input type="color" onchange="format('backColor', this.value)" title="Surligner" value="#ffff00">
-            <select onchange="formatFontFamily(this.value)" style="width: 80px;">
-                <option value="sans-serif">Standard</option><option value="cursive">Cursive</option><option value="monospace">Machine</option>
-            </select>
-            <input type="number" value="18" min="8" max="100" onchange="formatFontSize(this.value)" style="width: 40px;">
-        </div>
+    <div class="editor-toolbar">
+        <button onclick="format('bold')">G</button>
+        <button onclick="format('italic')">I</button>
+        <button onclick="format('underline')">S</button>
+        
+        <span style="font-size: 10px; margin-left: 5px;">Texte :</span>
+        <input type="color" onchange="format('foreColor', this.value)" title="Couleur du texte">
+        
+        <span style="font-size: 10px; margin-left: 5px;">Surligner :</span>
+        <input type="color" onchange="format('backColor', this.value)" title="Surligner" value="#ffff00">
+        
+        <span style="font-size: 10px; margin-left: 5px;">Fond :</span>
+        <input type="color" onchange="changeWidgetBg(this, this.value)" title="Fond du cadre" value="#ffffff">
+        
+        <button onclick="toggleTransparency(this)" title="Fond transparent" style="margin-left: 5px;">🫥</button>
+        
+        <select onchange="formatFontFamily(this.value)" style="width: 120px; margin-left: 5px;">
+            <optgroup label="Standard">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+            </optgroup>
+            <optgroup label="Scolaire & Aide">
+                <option value="'Caveat', cursive" style="font-family: 'Caveat';">Belle Cursive</option>
+                <option value="'OpenDyslexicRegular', sans-serif" style="font-family: 'OpenDyslexicRegular';">OpenDyslexic</option>
+                <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+            </optgroup>
+            <optgroup label="Style">
+                <option value="'Times New Roman', serif">Times (Livre)</option>
+                <option value="monospace">Machine</option>
+                <option value="Impact, sans-serif">Titre</option>
+            </optgroup>
+        </select>
+        
+        <input type="number" value="18" min="8" max="100" onchange="formatFontSize(this.value)" style="width: 40px;">
+    </div>
     </script>
 
     <template id="template-text">
@@ -222,15 +237,19 @@
 
     <template id="template-homework">
         <div class="editor-container"><div class="editor-toolbar-placeholder"></div><div class="editor-content" contenteditable="true" oninput="saveBoard()">
-            <u><span style="color: red; font-size: 24px; font-weight: bold;">Pour </span></u><br>
-            <p><span style="color: #f7639f; font-size: 20px; font-weight: bold;">&nbsp;CE2 =</span></p>
-            <p><span style="color: #12a2e0; font-size: 20px; font-weight: bold;">&nbsp;CM2 =</span></p>
-            <p><span style="color: #D9C93B; font-size: 20px; font-weight: bold;">&nbsp;TOUS =</span></p>
+            <span style="color: #D4C9C7; font-size: 20px; font-weight: bold;">✍🏻 Devoirs à noter </span><br>
+            <p><span style="color: red; background-color: #F7E02A; font-size: 30px; font-weight: bold;">Pour </span></p>
+            <p><span style="color: #f7639f; font-size: 25px; font-weight: bold;">&nbsp;&nbsp;👉🏻 CE2 =</span></p>
+            <p><span style="color: #12a2e0; font-size: 25px; font-weight: bold;">&nbsp;&nbsp;👉🏽 CM2 =</span></p>
+            <p><span style="color: #D9C93B; font-size: 25px; font-weight: bold;">&nbsp;&nbsp;👉 TOUS =</span></p>
         </div></div>
     </template>
 
     <template id="template-date">
         <div class="editor-container">
+            <div class="editor-toolbar" style="justify-content: center; border-bottom: none;">
+                <button onclick="toggleTransparency(this)" title="Fond transparent">🫥</button>
+            </div>
             <div class="calendar-page">
                 <div class="calendar-header"></div>
                 <div class="calendar-body">
@@ -250,32 +269,38 @@
         </div>
     </template>
 
-	<template id="template-iframe">
-		<div class="editor-container" style="height: 400px; width: 550px;">
-			<button class="exit-fs-btn" onclick="document.exitFullscreen()">✖ Quitter Plein Écran</button>
-			<div class="editor-toolbar">
-				<input type="text" placeholder="Collez l'URL ici..." style="flex-grow: 1;" onchange="loadIframe(this)">
-				<button onclick="toggleFullScreen(this.closest('.editor-container'))" title="Plein écran">⛶</button>
-			</div>
-			<iframe src="" style="flex-grow: 1; border: none; background: white;" allow="microphone; camera; display-capture; autoplay"></iframe>
-		</div>
-	</template>
+    <template id="template-iframe">
+        <div class="editor-container" style="height: 400px; width: 550px;">
+            <button class="exit-fs-btn" onclick="document.exitFullscreen()">✖ Quitter Plein Écran</button>
+            <div class="editor-toolbar">
+                <input type="text" placeholder="Collez l'URL ici..." style="flex-grow: 1;" onchange="loadIframe(this)">
+                <button onclick="toggleFullScreen(this.closest('.editor-container'))" title="Plein écran">⛶</button>
+            </div>
+            <iframe src="" style="flex-grow: 1; border: none; background: white;" allow="microphone; camera; display-capture; autoplay"></iframe>
+        </div>
+    </template>
 
-	<template id="template-outilsprofs">
-		<div class="editor-container" style="height: 500px; width: 800px;">
-			<button class="exit-fs-btn" onclick="document.exitFullscreen()">✖ Quitter Plein Écran</button>
-			<div class="editor-toolbar" style="display: flex; justify-content: flex-end;">
-				<button onclick="toggleFullScreen(this.closest('.editor-container'))" title="Plein écran">⛶ Plein écran</button>
-			</div>
-			<iframe src="https://ecolebernardet.github.io/outilsprofs" style="flex-grow: 1; border: none; background: white;" allow="microphone; camera; display-capture; autoplay"></iframe>
-		</div>
-	</template>
+    <template id="template-outilsprofs">
+        <div class="editor-container" style="height: 500px; width: 800px;">
+            <button class="exit-fs-btn" onclick="document.exitFullscreen()">✖ Quitter Plein Écran</button>
+            <div class="editor-toolbar" style="display: flex; justify-content: flex-end;">
+                <button onclick="toggleFullScreen(this.closest('.editor-container'))" title="Plein écran">⛶ Plein écran</button>
+            </div>
+            <iframe src="https://ecolebernardet.github.io/outilsprofs" style="flex-grow: 1; border: none; background: white;" allow="microphone; camera; display-capture; autoplay"></iframe>
+        </div>
+    </template>
 
     <input type="file" id="bg-upload" style="display:none" accept="image/*" onchange="handleBgUpload(this)">
     
     <script>
         let widgetCount = 0;
         let historyStack = [];
+
+        function takeSnapshot() {
+            const data = localStorage.getItem('bureauProfData');
+            if (data) historyStack.push(data);
+            if (historyStack.length > 20) historyStack.shift();
+        }
 
         function toggleMenu() { document.getElementById('tools-menu').classList.toggle('active'); document.getElementById('bg-submenu').classList.remove('active'); }
         function toggleSubMenu(e) { e.stopPropagation(); document.getElementById('bg-submenu').classList.toggle('active'); }
@@ -287,6 +312,31 @@
             }
         };
 
+        function toggleTransparency(btn) {
+            takeSnapshot();
+            const widget = btn.closest('.widget');
+            const container = widget.querySelector('.editor-container');
+            const isNowTransparent = widget.getAttribute('data-transparent') !== 'true';
+            widget.setAttribute('data-transparent', isNowTransparent);
+
+            if (!isNowTransparent) {
+                widget.style.backgroundColor = 'var(--widget-bg)';
+                widget.style.boxShadow = 'var(--shadow)';
+                if(container) {
+                    container.style.background = 'white';
+                    container.style.border = '1px solid #eee';
+                }
+            } else {
+                widget.style.backgroundColor = 'transparent';
+                widget.style.boxShadow = 'none';
+                if(container) {
+                    container.style.background = 'transparent';
+                    container.style.border = 'none';
+                }
+            }
+            saveBoard();
+        }
+        
         function format(cmd, val = null) { takeSnapshot(); document.execCommand(cmd, false, val); saveBoard(); }
         function formatFontSize(px) { takeSnapshot(); document.execCommand('fontSize', false, "7"); document.querySelectorAll('font[size="7"]').forEach(f => { f.removeAttribute('size'); f.style.fontSize = px + 'px'; }); saveBoard(); }
         function formatFontFamily(f) { takeSnapshot(); document.execCommand('fontName', false, f); saveBoard(); }
@@ -296,22 +346,6 @@
             const iframe = input.parentElement.nextElementSibling;
             iframe.src = url.startsWith('http') ? url : 'https://' + url;
             saveBoard();
-        }
-
-        function saveBoard() {
-            const widgets = [];
-            document.querySelectorAll('.widget').forEach(w => {
-                const editor = w.querySelector('.editor-content');
-                const iframe = w.querySelector('iframe');
-                const container = w.querySelector('.editor-container');
-                widgets.push({ 
-                    type: w.dataset.type, top: w.style.top, left: w.style.left, 
-                    width: container ? container.style.width : null,
-                    height: container ? container.style.height : null,
-                    content: editor ? editor.innerHTML : (iframe ? iframe.src : null) 
-                });
-            });
-            localStorage.setItem('bureauProfData', JSON.stringify(widgets));
         }
 
         function createWidget(type, autoSave = true) {
@@ -359,6 +393,19 @@
             }, 1000);
         }
 
+        function changeWidgetBg(input, color) {
+            takeSnapshot();
+            const widget = input.closest('.widget');
+            const container = widget.querySelector('.editor-container');
+            const content = widget.querySelector('.editor-content');
+            widget.setAttribute('data-transparent', 'false');
+            widget.style.boxShadow = 'var(--shadow)';
+            widget.style.backgroundColor = color;
+            if(container) { container.style.background = color; container.style.border = '1px solid #eee'; }
+            if(content) content.style.background = color;
+            saveBoard();
+        }
+
         function makeDraggable(elmnt) {
             const header = elmnt.querySelector('.widget-header');
             header.onmousedown = (e) => {
@@ -379,7 +426,7 @@
             const board = document.getElementById('board');
             board.style.backgroundImage = bg.startsWith('url') ? bg : 'none';
             board.style.backgroundColor = bg.startsWith('#') ? bg : (bg === 'none' ? 'var(--bg-color)' : 'transparent');
-            board.style.backgroundSize = bg.includes('seyes') ? '800px' : (bg.includes('transparenttextures') ? 'auto' : 'cover');
+            board.style.backgroundSize = bg.includes('grid-me') || bg.includes('lined-paper') || bg.includes('graphy') ? 'auto' : 'cover';
         }
 
         function saveBg(bg) { localStorage.setItem('bureauProfBg', bg); }
@@ -390,12 +437,6 @@
                 reader.onload = (e) => { applyBackground(`url("${e.target.result}")`); saveBg(`url("${e.target.result}")`); };
                 reader.readAsDataURL(input.files[0]);
             }
-        }
-
-        function takeSnapshot() {
-            const data = localStorage.getItem('bureauProfData');
-            if (data) historyStack.push(data);
-            if (historyStack.length > 20) historyStack.shift();
         }
 
         function undoAction() {
@@ -429,9 +470,30 @@
             }
         }
 
+        function saveBoard() {
+            const widgets = [];
+            document.querySelectorAll('.widget').forEach(w => {
+                const editor = w.querySelector('.editor-content');
+                const iframe = w.querySelector('iframe');
+                const container = w.querySelector('.editor-container');
+                widgets.push({ 
+                    type: w.dataset.type, 
+                    top: w.style.top, 
+                    left: w.style.left, 
+                    width: container ? container.style.width : null,
+                    height: container ? container.style.height : null,
+                    content: editor ? editor.innerHTML : (iframe ? iframe.src : null),
+                    isTransparent: w.getAttribute('data-transparent') === 'true',
+                    bgColor: w.style.backgroundColor
+                });
+            });
+            localStorage.setItem('bureauProfData', JSON.stringify(widgets));
+        }
+
         function restoreWidget(wData) {
             const w = createWidget(wData.type, false);
-            w.style.top = wData.top; w.style.left = wData.left;
+            w.style.top = wData.top; 
+            w.style.left = wData.left;
             const container = w.querySelector('.editor-container');
             if (container && wData.width) container.style.width = wData.width;
             if (container && wData.height) container.style.height = wData.height;
@@ -439,7 +501,20 @@
                 const editor = w.querySelector('.editor-content');
                 const iframe = w.querySelector('iframe');
                 if (editor) editor.innerHTML = wData.content;
-                if (iframe) { iframe.src = wData.content; w.querySelector('input').value = wData.content; }
+                if (iframe) { iframe.src = wData.content; if(w.querySelector('input')) w.querySelector('input').value = wData.content; }
+            }
+            if (wData.bgColor && wData.bgColor !== 'transparent') {
+                w.style.backgroundColor = wData.bgColor;
+                if(container) container.style.background = wData.bgColor;
+                const content = w.querySelector('.editor-content');
+                if(content) content.style.background = wData.bgColor;
+            }
+            if (wData.isTransparent) {
+                w.setAttribute('data-transparent', 'true');
+                w.style.backgroundColor = 'transparent';
+                w.style.boxShadow = 'none';
+                w.style.borderColor = 'transparent';
+                if(container) { container.style.background = 'transparent'; container.style.border = 'none'; }
             }
         }
 
@@ -447,17 +522,14 @@
         function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
         function confirmClearBoard() { takeSnapshot(); document.querySelectorAll('.widget').forEach(w => w.remove()); localStorage.removeItem('bureauProfData'); closeModal(); saveBoard(); }
 
-		function toggleFullScreen(element) {
-			if (!document.fullscreenElement) {
-				if (element.requestFullscreen) {
-					element.requestFullscreen();
-				} else if (element.webkitRequestFullscreen) {
-					element.webkitRequestFullscreen();
-				}
-			} else {
-				document.exitFullscreen();
-			}
-		}
+        function toggleFullScreen(element) {
+            if (!document.fullscreenElement) {
+                if (element.requestFullscreen) element.requestFullscreen();
+                else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
 
         window.onload = () => {
             const savedBg = localStorage.getItem('bureauProfBg');
