@@ -167,6 +167,7 @@
             <button class="tool-btn" onclick="createWidget('date'); toggleMenu()" style="background: #E09231;"><span>📅</span> Agenda</button>
             <button class="tool-btn" onclick="createWidget('time'); toggleMenu()" style="background: #81D674;"><span>🕒</span> Horloge</button>
             <button class="tool-btn" onclick="createWidget('iframe'); toggleMenu()" style="background: #6BC8CF;"><span>💻</span> Fenêtre Web</button>
+			<button class="tool-btn" onclick="createWidget('youtube'); toggleMenu()" style="background: #FF0000;"><span>🎬</span> Vidéo YouTube</button>
             <button class="tool-btn" onclick="createWidget('outilsprofs'); toggleMenu()" style="background: #7983D4;"><span>🎒</span> OutilsProfs</button>
             
             <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 5px 0;">
@@ -175,10 +176,12 @@
             <div id="bg-submenu">
                 <div class="bg-thumb" style="background-color: #eef2f5;" onclick="applyBackground('none'); saveBg('none')" title="Défaut"></div>
                 <div class="bg-thumb" style="background-color: #2f3542;" onclick="applyBackground('#2f3542'); saveBg('#2f3542')" title="Ardoise"></div>
-                <div class="bg-thumb" style="background-color: #27ae60;" onclick="applyBackground('#27ae60'); saveBg('#27ae60')" title="Vert Tableau"></div>
+                <div class="bg-thumb" style="background-color: #104626;" onclick="applyBackground('#104626'); saveBg('#104626')" title="Vert Tableau"></div>
+				<div class="bg-thumb" style="background-color: #BAA09B;" onclick="applyBackground('#BAA09B'); saveBg('#BAA09B')" title="Vieux rose"></div>
                 <div class="bg-thumb" style="background-image: url('https://www.transparenttextures.com/patterns/grid-me.png');" onclick="applyBackground('url(https://www.transparenttextures.com/patterns/grid-me.png)'); saveBg('url(https://www.transparenttextures.com/patterns/grid-me.png)')" title="Carreaux"></div>
                 <div class="bg-thumb" style="background-image: url('https://www.transparenttextures.com/patterns/lined-paper.png');" onclick="applyBackground('url(https://www.transparenttextures.com/patterns/lined-paper.png)'); saveBg('url(https://www.transparenttextures.com/patterns/lined-paper.png)')" title="Lignes"></div>
-                <div class="bg-thumb" style="background-image: url('https://www.transparenttextures.com/patterns/graphy.png');" onclick="applyBackground('url(https://www.transparenttextures.com/patterns/graphy.png)'); saveBg('url(https://www.transparenttextures.com/patterns/graphy.png)')" title="Millimétré"></div>
+                <div class="bg-thumb" style="background-image: url('https://www.transparenttextures.com/patterns/arches.png');" onclick="applyBackground('url(https://www.transparenttextures.com/patterns/arches.png)'); saveBg('url(https://www.transparenttextures.com/patterns/arches.png)')" title="Arches"></div>
+				<div class="bg-thumb" style="background-image: url('https://www.transparenttextures.com/patterns/shattered.png');" onclick="applyBackground('url(https://www.transparenttextures.com/patterns/shattered.png)'); saveBg('url(https://www.transparenttextures.com/patterns/shattered.png)')" title="Éclats"></div>
                 <button class="tool-btn" onclick="document.getElementById('bg-upload').click()" style="background: #8e44ad; padding: 5px; font-size: 10px; grid-column: span 3; border-radius: 8px;"><span>📷</span> Importer image</button>
             </div>
 
@@ -232,12 +235,15 @@
 				<option value="'BelleAllureGS', cursive" style="font-family: 'BelleAllureGS';">📏 Belle Allure GS</option>
 			</select>
         
-        <input type="number" value="28" min="8" max="100" onchange="formatFontSize(this.value)" style="width: 40px;">
+        <input type="number" value="40" min="8" max="100" onchange="formatFontSize(this.value)" style="width: 40px;">
     </div>
     </script>
 
     <template id="template-text">
-        <div class="editor-container"><div class="editor-toolbar-placeholder"></div><div class="editor-content" contenteditable="true" oninput="saveBoard()"></div></div>
+        <div class="editor-container">
+            <div class="editor-toolbar-placeholder"></div>
+            <div class="editor-content" contenteditable="true" oninput="saveBoard()" style="font-size: 40px;"></div>
+        </div>
     </template>
 
     <template id="template-homework">
@@ -294,6 +300,17 @@
             <iframe src="https://ecolebernardet.github.io/outilsprofs" style="flex-grow: 1; border: none; background: white;" allow="microphone; camera; display-capture; autoplay"></iframe>
         </div>
     </template>
+
+	<template id="template-youtube">
+		<div class="editor-container" style="height: 350px; width: 600px;">
+			<button class="exit-fs-btn" onclick="document.exitFullscreen()">✖ Quitter Plein Écran</button>
+			<div class="editor-toolbar">
+				<input type="text" placeholder="Lien YouTube (ex: https://youtu.be/...) " style="flex-grow: 1;" onchange="loadYoutube(this)">
+				<button onclick="toggleFullScreen(this.closest('.editor-container'))" title="Plein écran">⛶</button>
+			</div>
+			<iframe src="" style="flex-grow: 1; border: none; background: #000;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+		</div>
+	</template>
 
     <input type="file" id="bg-upload" style="display:none" accept="image/*" onchange="handleBgUpload(this)">
     
@@ -433,11 +450,36 @@
             };
         }
 
+		function loadYoutube(input) {
+    let url = input.value;
+    let videoId = '';
+    
+    // Extraction de l'ID vidéo pour différents formats d'URL
+    if (url.includes('youtube.com/watch?v=')) {
+        videoId = url.split('v=')[1].split('&')[0];
+    } else if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1].split('?')[0];
+    } else if (url.includes('youtube.com/embed/')) {
+        videoId = url.split('embed/')[1].split('?')[0];
+    }
+
+    const iframe = input.parentElement.nextElementSibling;
+    if (videoId) {
+        iframe.src = `https://www.youtube.com/embed/${videoId}`;
+        saveBoard();
+    } else {
+        alert("Lien YouTube non valide");
+    }
+}
+
         function applyBackground(bg) {
             const board = document.getElementById('board');
             board.style.backgroundImage = bg.startsWith('url') ? bg : 'none';
             board.style.backgroundColor = bg.startsWith('#') ? bg : (bg === 'none' ? 'var(--bg-color)' : 'transparent');
-            board.style.backgroundSize = bg.includes('grid-me') || bg.includes('lined-paper') || bg.includes('graphy') ? 'auto' : 'cover';
+            
+            // Ajout de "arches" dans la liste des motifs qui ne doivent pas être étirés
+            const isPattern = bg.includes('grid-me') || bg.includes('lined-paper') || bg.includes('graphy') || bg.includes('arches') || bg.includes('shattered');
+            board.style.backgroundSize = isPattern ? 'auto' : 'cover';
         }
 
         function saveBg(bg) { localStorage.setItem('bureauProfBg', bg); }
@@ -449,7 +491,6 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
-
         function undoAction() {
             if (historyStack.length > 0) {
                 const lastState = JSON.parse(historyStack.pop());
@@ -458,7 +499,6 @@
                 saveBoard();
             }
         }
-
         function exportConfig() {
             const data = { bg: localStorage.getItem('bureauProfBg'), widgets: JSON.parse(localStorage.getItem('bureauProfData') || "[]") };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -467,7 +507,6 @@
             a.download = `bureau-prof-${new Date().toLocaleDateString()}.json`;
             a.click();
         }
-
         function importConfig(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -480,7 +519,6 @@
                 reader.readAsText(input.files[0]);
             }
         }
-
         function saveBoard() {
             const widgets = [];
             document.querySelectorAll('.widget').forEach(w => {
@@ -500,7 +538,6 @@
             });
             localStorage.setItem('bureauProfData', JSON.stringify(widgets));
         }
-
         function restoreWidget(wData) {
             const w = createWidget(wData.type, false);
             w.style.top = wData.top; 
@@ -528,7 +565,6 @@
                 if(container) { container.style.background = 'transparent'; container.style.border = 'none'; }
             }
         }
-
         function clearBoard() { document.getElementById('modal-overlay').style.display = 'flex'; }
         function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
         function confirmClearBoard() { takeSnapshot(); document.querySelectorAll('.widget').forEach(w => w.remove()); localStorage.removeItem('bureauProfData'); closeModal(); saveBoard(); }
@@ -541,7 +577,6 @@
                 document.exitFullscreen();
             }
         }
-
         window.onload = () => {
             const savedBg = localStorage.getItem('bureauProfBg');
             if (savedBg) applyBackground(savedBg);
