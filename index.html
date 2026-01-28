@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Le Bureau du Prof</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Schoolbell&family=Gochi+Hand&family=Andika&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/dist/opendyslexic.min.css">
 
     <style>
         /* --- CHARTE GRAPHIQUE --- */
@@ -96,19 +94,16 @@
             height: 26px; box-sizing: border-box;
         }
         
-		@font-face {
-    font-family: 'BelleAllureGS';
-    src: url('https://cdn.jsdelivr.net/gh/jeanboyault/BelleAllure@master/Fonts/BelleAllureGS-Reg.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
+		@font-face { font-family: 'KGPerfectPenmanship'; src: url('./KGPerfectPenmanship.ttf') format('opentype'); font-weight: normal; font-style: normal; }
+		
+		@font-face { font-family: 'Andika'; src: url('./Andika.ttf') format('opentype'); font-weight: normal; font-style: normal; }
 
-/* On ajuste la taille par défaut pour cette police car elle est souvent petite */
-[style*="BelleAllureGS"] {
-    line-height: 1.5;
-    font-size: 1.2em;
-}
+		@font-face { font-family: 'OpenDyslexicLocal'; src: url('./OpenDyslexic-Regular.otf') format('opentype'); font-weight: normal; font-style: normal; }
+
+		@font-face { font-family: 'BelleAllureGS'; src: url('BelleAllureGS-Gros.otf') format('opentype'); font-weight: normal; font-style: normal; }
+
+/* On force une taille un peu plus grande car la version "Fin" peut être délicate à lire au tableau */
+		style*="BelleAllureGS"] { font-size: 1.1em; line-height: 1.4; }
 
         .editor-content { padding: 10px; outline: none; overflow: auto; text-align: left; flex-grow: 1; }
 
@@ -226,24 +221,16 @@
         
         <button onclick="toggleTransparency(this)" title="Fond transparent" style="margin-left: 5px;">🫥</button>
         
-        <select onchange="formatFontFamily(this.value)" style="width: 120px; margin-left: 5px;">
-            <optgroup label="Standard">
-                <option value="Arial, sans-serif">Arial</option>
-                <option value="'Segoe UI', sans-serif">Segoe UI</option>
-                <option value="Verdana, sans-serif">Verdana</option>
-            </optgroup>
-            <optgroup label="Scolaire & Aide">
+        <select onchange="formatFontFamily(this.value)" style="width: 140px; margin-left: 5px;">
+				<option value="Arial, sans-serif">Arial</option>
+				<option value="'Segoe UI', sans-serif">Segoe UI</option>
+				<option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+				<option value="Verdana, sans-serif">Verdana</option>
+				<option value="'KGPerfectPenmanship', sans-serif">KGPerfectPenmanship</option>
+				<option value="'Andika', sans-serif">Andika</option>
+				<option value="'OpenDyslexicLocal', sans-serif" style="font-family: 'OpenDyslexicLocal';">🧩 OpenDyslexic</option>
 				<option value="'BelleAllureGS', cursive" style="font-family: 'BelleAllureGS';">📏 Belle Allure GS</option>
-				<option value="'OpenDyslexicRegular', sans-serif" style="font-family: 'OpenDyslexicRegular';">🧩 OpenDyslexic</option>
-				<option value="'Caveat', cursive" style="font-family: 'Caveat';">🖋️ Belle Cursive</option>
-				<option value="'Comic Sans MS', cursive">📝 Comic Sans</option>
-			</optgroup>
-            <optgroup label="Style">
-                <option value="'Times New Roman', serif">Times New Roman</option>
-                <option value="monospace">Monspace</option>
-                <option value="Impact, sans-serif">Impact</option>
-            </optgroup>
-        </select>
+			</select>
         
         <input type="number" value="18" min="8" max="100" onchange="formatFontSize(this.value)" style="width: 40px;">
     </div>
