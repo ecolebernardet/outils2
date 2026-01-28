@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Le Bureau du Prof</title>
-<style>
+    <style>
         /* --- CHARTE GRAPHIQUE --- */
         :root {
             --bg-color: #eef2f5;
@@ -23,7 +23,7 @@
             overflow: hidden;
         }
 
-        #board { width: 100vw; height: 100vh; position: relative; }
+        #board { width: 100vw; height: 100vh; position: relative; z-index: 0; transition: background 0.3s ease; }
 
         /* --- WIDGETS --- */
         .widget {
@@ -31,19 +31,47 @@
             background: var(--widget-bg);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            min-width: 300px;
+            min-width: 320px;
             display: flex;
             flex-direction: column;
             z-index: 1;
             border: 2px solid transparent;
             height: auto;
-            outline: none; /* Évite le contour bleu par défaut du navigateur */
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
+
+        .widget:focus-within { border-color: var(--primary-color); box-shadow: 0 12px 30px rgba(74, 144, 226, 0.3); }
+        .widget[data-type="homework"]:focus-within { border-color: #ff4757; }
+        .widget[data-type="iframe"]:focus-within { border-color: #2bcbba; }
+
+        /* --- CONFIGURATION SPECIFIQUE AGENDA & HORLOGE (RESIZABLE) --- */
+        .widget[data-type="date"], .widget[data-type="time"] { 
+            min-width: unset; 
+            width: auto; 
+        }
+
+        .widget[data-type="date"] .editor-container,
+        .widget[data-type="time"] .editor-container {
+            resize: both;
+            overflow: hidden;
+            container-type: inline-size;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: white;
+        }
+
+        .widget[data-type="date"] .editor-container { min-width: 150px; min-height: 180px; width: 220px; height: 260px; }
+        .widget[data-type="time"] .editor-container { min-width: 120px; min-height: 80px; width: 200px; height: 100px; }
+
+        .widget .widget-header, .widget .editor-toolbar { display: none; }
+        .widget:focus-within .widget-header, .widget:focus-within .editor-toolbar { display: flex; }
 
         .widget-header {
             padding: 10px 15px;
             cursor: move;
-            display: flex;
             justify-content: space-between;
             align-items: center;
             background: #fcfcfc;
@@ -52,137 +80,209 @@
         }
 
         .widget-title { font-weight: 700; color: var(--primary-color); font-size: 0.85em; text-transform: uppercase; }
-        .close-btn { cursor: pointer; font-size: 20px; color: #ccc; }
+        .close-btn { cursor: pointer; font-size: 20px; color: #ccc; padding: 0 5px; }
         .close-btn:hover { color: #ff5f56; }
 
-        .widget-content { padding: 10px; flex-grow: 1; }
+        .widget-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* --- ÉDITEUR DE TEXTE AVEC BARRE DYNAMIQUE --- */
-        .editor-container { display: flex; flex-direction: column; border: 1px solid #eee; border-radius: 8px; background: white; }
+        /* --- ÉDITEUR --- */
+        .editor-container { 
+            display: flex; flex-direction: column; border: 1px solid #eee; border-radius: 8px; background: white; 
+            flex-grow: 1; overflow: hidden; resize: both; min-width: 280px; min-height: 120px;
+        }
         
-        /* La barre est cachée par défaut */
-        .editor-toolbar { 
-            display: none; 
-            gap: 4px; padding: 5px; 
-            background: #f8f9fa; border-bottom: 1px solid #eee; flex-wrap: wrap; 
-        }
-
-        /* Elle s'affiche quand on clique dans le widget */
-        .widget:focus-within .editor-toolbar {
-            display: flex;
-        }
-
+        .editor-toolbar { gap: 4px; padding: 5px; background: #f8f9fa; border-bottom: 1px solid #eee; flex-wrap: wrap; align-items: center; }
         .editor-toolbar button, .editor-toolbar select, .editor-toolbar input { 
-            padding: 2px 6px; cursor: pointer; border: 1px solid #ddd; background: white; border-radius: 4px; font-size: 12px;
-            height: 24px; box-sizing: border-box;
+            padding: 2px 4px; cursor: pointer; border: 1px solid #ddd; background: white; border-radius: 4px; font-size: 11px;
+            height: 26px; box-sizing: border-box;
         }
-
-        .editor-content { 
-            padding: 10px; min-height: 120px; min-width: 280px; outline: none; 
-            overflow: auto; text-align: left; resize: both; 
-        }
-
-        /* --- STYLES SPÉCIFIQUES --- */
-        .calendar-page { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: white; text-align: center; }
-        .calendar-header { background: #ff4757; color: white; padding: 5px; font-weight: bold; }
-        .calendar-day-name { color: #ff4757; font-weight: 600; margin-top: 10px; text-transform: capitalize; }
-        .calendar-day-number { font-size: 3em; font-weight: 800; color: var(--text-color); }
-        .calendar-month { margin-bottom: 10px; text-transform: capitalize; color: #888; }
         
-        .clock-time { font-size: 3em; font-weight: 800; color: var(--primary-color); text-align: center; font-family: monospace; padding: 10px; }
-        .clock-seconds { font-size: 0.4em; color: #888; margin-left: 5px; }
+        .editor-content { padding: 10px; outline: none; overflow: auto; text-align: left; flex-grow: 1; }
 
-        /* --- TOOLBAR BAS --- */
-        #toolbar {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: white; padding: 10px 25px; border-radius: 50px;
-            display: flex; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 9999;
+        /* --- INTERFACE MENU --- */
+        #toolbar-container { position: fixed; bottom: 30px; left: 30px; display: flex; flex-direction: column; align-items: flex-start; z-index: 9999; }
+        #tools-menu { display: none; background: #1F1F21; border-radius: 12px; padding: 10px; box-shadow: var(--shadow); margin-bottom: 15px; flex-direction: column; gap: 8px; min-width: 180px; border: 1px solid #eee; position: relative; }
+        #tools-menu.active { display: flex; }
+        
+        #undo-btn { position: fixed; bottom: 30px; right: 30px; background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; z-index: 9999; box-shadow: var(--shadow); }
+        .tool-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; width: 100%; white-space: nowrap; }
+		.tool-btn2 { background: #dddddd; color: black; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; width: 100%; white-space: nowrap; }
+        #main-tool-btn { background: #333; width: 200px; justify-content: center; }
+
+        /* --- SOUS-MENU FONDS --- */
+        #bg-submenu {
+            display: none; position: absolute; left: 105%; bottom: 0; background: white; border-radius: 12px; padding: 12px;
+            box-shadow: var(--shadow); grid-template-columns: repeat(3, 1fr); gap: 10px; min-width: 240px; border: 1px solid #eee;
         }
-        .tool-btn {
-            background: var(--primary-color); color: white; border: none;
-            padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 600;
-            display: flex; align-items: center; gap: 6px; transition: 0.2s;
+        #bg-submenu.active { display: grid; }
+        .bg-thumb { width: 70px; height: 50px; border-radius: 6px; border: 2px solid #eee; cursor: pointer; background-size: cover; background-position: center; transition: 0.2s; }
+        .bg-thumb:hover { transform: scale(1.05); border-color: var(--primary-color); }
+        
+        /* --- HORLOGE & CALENDRIER --- */
+        .calendar-page { 
+            width: 100%; height: 100%; display: flex; flex-direction: column; border: 1px solid #ced4da; 
+            border-radius: 8px; overflow: hidden; background: white; text-align: center; position: relative;
+            padding-top: 15px; box-sizing: border-box;
         }
-        .tool-btn:hover { background: #357abd; transform: translateY(-2px); }
+
+        .calendar-page::before { content: "● ● ●"; position: absolute; top: -8px; left: 0; right: 0; color: #8e9aaf; font-size: 24px; letter-spacing: 15px; text-shadow: 0 5px 0 #6c757d; }
+        .calendar-header { background: #D17B6B; height: 20%; min-height: 30px; border-bottom: 2px solid #D17B6B; margin-bottom: 5px; }
+        .calendar-body { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 5px; }
+
+        /* Tailles de police fluides (cqw) */
+        .calendar-day-name { font-size: 12cqw; font-weight: 700; color: #333; text-transform: lowercase; }
+        .calendar-day-number { font-size: 35cqw; font-weight: 800; color: #2c3e50; line-height: 1em; margin: 2cqw 0; }
+        .calendar-month { font-size: 15cqw; font-weight: 600; color: #333; }
+
+        .clock-time { font-size: 25cqw; font-weight: 800; color: var(--primary-color); font-family: monospace; display: flex; align-items: baseline; justify-content: center; width: 100%; }
+        .clock-seconds { font-size: 0.4em; color: #888; margin-left: 2cqw; }
+
+        /* MODALE */
+        #modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:20000; justify-content:center; align-items:center; }
+        .modal-content { background:white; padding:30px; border-radius:var(--border-radius); box-shadow:var(--shadow); text-align:center; max-width:400px; width:90%; }
+        .modal-content button { padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: transform 0.1s; }
+        .modal-content button:active { transform: scale(0.95); }
+        .modal-content .btn-cancel { border: 1px solid #ddd; background: #f8f9fa; color: var(--text-color); }
+        .modal-content .btn-confirm { border: none; background: #ff4757; color: white; }
     </style>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon.png">
 </head>
 <body>
 
     <div id="board"></div>
 
-    <div id="toolbar">
-        <button class="tool-btn" onclick="createWidget('text')"><span>+</span> Texte</button>
-        <button class="tool-btn" onclick="createWidget('homework')"><span>📝</span> Devoirs</button>
-        <button class="tool-btn" onclick="createWidget('date')"><span>📅</span> Date</button>
-        <button class="tool-btn" onclick="createWidget('time')"><span>🕒</span> Heure</button>
-        <button class="tool-btn" onclick="clearBoard()" style="background: #ff4757;"><span>×</span> Effacer</button>
+    <div id="toolbar-container">
+        <div id="tools-menu">
+            <button class="tool-btn" onclick="createWidget('text'); toggleMenu()" style="background: #D1391B;"><span>🖊️</span> Texte</button>
+            <button class="tool-btn" onclick="createWidget('homework'); toggleMenu()" style="background: #E0D741;"><span>📝</span> Devoirs</button>
+            <button class="tool-btn" onclick="createWidget('date'); toggleMenu()" style="background: #E09231;"><span>📅</span> Agenda</button>
+            <button class="tool-btn" onclick="createWidget('time'); toggleMenu()" style="background: #81D674;"><span>🕒</span> Horloge</button>
+            <button class="tool-btn" onclick="createWidget('iframe'); toggleMenu()" style="background: #6BC8CF;"><span>💻</span> Fenêtre Web</button>
+			<button class="tool-btn" onclick="createWidget('outilsprofs'); toggleMenu()" style="background: #7983D4;"><span>🎒</span>OutilsProfs</button>
+            
+            <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 5px 0;">
+            <button class="tool-btn" style="background: #9b59b6;" onclick="toggleSubMenu(event)"><span>🖼️</span> Choisir fond ❯</button>
+            
+            <div id="bg-submenu">
+                <div class="bg-thumb" style="background-color: #eef2f5;" onclick="applyBackground('none'); saveBg('none')" title="Défaut"></div>
+                <div class="bg-thumb" style="background-color: #2f3542;" onclick="applyBackground('#2f3542'); saveBg('#2f3542')" title="Ardoise"></div>
+                <div class="bg-thumb" style="background-color: #27ae60;" onclick="applyBackground('#27ae60'); saveBg('#27ae60')" title="Vert Tableau"></div>
+                <div class="bg-thumb" style="background-image: url('https://www.transparenttextures.com/patterns/grid-me.png');" onclick="applyBackground('url(https://www.transparenttextures.com/patterns/grid-me.png)'); saveBg('url(https://www.transparenttextures.com/patterns/grid-me.png)')" title="Carreaux"></div>
+                <div class="bg-thumb" style="background-image: url('https://www.transparenttextures.com/patterns/lined-paper.png');" onclick="applyBackground('url(https://www.transparenttextures.com/patterns/lined-paper.png)'); saveBg('url(https://www.transparenttextures.com/patterns/lined-paper.png)')" title="Lignes"></div>
+                <div class="bg-thumb" style="background-image: url('https://www.transparenttextures.com/patterns/graphy.png');" onclick="applyBackground('url(https://www.transparenttextures.com/patterns/graphy.png)'); saveBg('url(https://www.transparenttextures.com/patterns/graphy.png)')" title="Millimétré"></div>
+                <button class="tool-btn" onclick="document.getElementById('bg-upload').click()" style="background: #8e44ad; padding: 5px; font-size: 10px; grid-column: span 3; border-radius: 8px;"><span>📷</span> Importer image</button>
+            </div>
+
+            <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 5px 0;">
+            <button class="tool-btn2" onclick="exportConfig()"><span>💾</span> Exporter config</button>
+            <button class="tool-btn2" onclick="document.getElementById('import-input').click()"><span>📂</span> Importer config</button>
+            <input type="file" id="import-input" style="display:none" accept=".json" onchange="importConfig(this)">
+            
+            <button class="tool-btn2" onclick="clearBoard(); toggleMenu()" style="background: #ED8595; margin-top:5px;"><span>❌</span> Effacer tout</button>
+        </div>
+        <button id="main-tool-btn" class="tool-btn" onclick="toggleMenu()">MENU</button>
     </div>
 
-    <template id="template-text">
-        <div class="editor-container">
-            <div class="editor-toolbar">
-                <button onclick="format('bold')">G</button>
-                <button onclick="format('italic')">I</button>
-                <button onclick="format('underline')">S</button>
-                <input type="color" onchange="format('foreColor', this.value)" title="Couleur texte">
-                <input type="color" onchange="format('backColor', this.value)" title="Surligner" value="#ffff00">
-                <select onchange="format('fontSize', this.value)">
-                    <option value="3">Taille</option>
-                    <option value="1">Petit</option>
-                    <option value="3">Normal</option>
-                    <option value="5">Grand</option>
-                </select>
+    <button id="undo-btn" onclick="undoAction()"><span>↩️</span> Annuler</button>
+
+    <div id="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:#ff4757;">⚠️ Tout effacer ?</h3>
+            <p style="color:#666;">Cette action videra votre bureau. C'est irréversible.</p>
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+                <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+                <button class="btn-confirm" onclick="confirmClearBoard()">Oui, vider tout</button>
             </div>
-            <div class="editor-content" contenteditable="true" oninput="saveBoard()"></div>
         </div>
+    </div>
+
+    <script type="text/html" id="toolbar-html">
+        <div class="editor-toolbar">
+            <button onclick="format('bold')">G</button><button onclick="format('italic')">I</button><button onclick="format('underline')">S</button>
+            <input type="color" onchange="format('foreColor', this.value)" title="Texte">
+            <input type="color" onchange="format('backColor', this.value)" title="Surligner" value="#ffff00">
+            <select onchange="formatFontFamily(this.value)" style="width: 80px;">
+                <option value="sans-serif">Standard</option><option value="cursive">Cursive</option><option value="monospace">Machine</option>
+            </select>
+            <input type="number" value="18" min="8" max="100" onchange="formatFontSize(this.value)" style="width: 40px;">
+        </div>
+    </script>
+
+    <template id="template-text">
+        <div class="editor-container"><div class="editor-toolbar-placeholder"></div><div class="editor-content" contenteditable="true" oninput="saveBoard()"></div></div>
     </template>
 
     <template id="template-homework">
-        <div class="editor-container">
-            <div class="editor-toolbar">
-                <button onclick="format('bold')">G</button>
-                <button onclick="format('italic')">I</button>
-                <button onclick="format('underline')">S</button>
-                <input type="color" onchange="format('foreColor', this.value)" title="Couleur texte">
-                <input type="color" onchange="format('backColor', this.value)" title="Surligner" value="#ffff00">
-                <select onchange="format('fontSize', this.value)">
-                    <option value="3">Taille</option>
-                    <option value="1">Petit</option>
-                    <option value="3">Normal</option>
-                    <option value="5">Grand</option>
-                </select>
-            </div>
-            <div class="editor-content" contenteditable="true" oninput="saveBoard()">
-                <u><span style="color: red; font-size: 24px; font-weight: bold;">Pour date</span></u><br>
-				<p></p>
-				<span style="color: #f7639f; font-size: 22px; font-weight: bold;">&nbsp;&nbsp;&nbsp;CE2 =</span>
-				<p></p>
-                <span style="color: #12a2e0; font-size: 22px; font-weight: bold;">&nbsp;&nbsp;&nbsp;CM2 =</span>
-				<p></p>
-                <span style="color: #086e23; font-size: 22px; font-weight: bold;">&nbsp;&nbsp;&nbsp;TOUS =</span><br>
-	        </div>
+        <div class="editor-container"><div class="editor-toolbar-placeholder"></div><div class="editor-content" contenteditable="true" oninput="saveBoard()">
+            <u><span style="color: red; font-size: 24px; font-weight: bold;">Pour </span></u><br>
+            <p><span style="color: #f7639f; font-size: 20px; font-weight: bold;">&nbsp;CE2 =</span></p>
+            <p><span style="color: #12a2e0; font-size: 20px; font-weight: bold;">&nbsp;CM2 =</span></p>
+            <p><span style="color: #D9C93B; font-size: 20px; font-weight: bold;">&nbsp;TOUS =</span></p>
+        </div></div>
     </template>
 
     <template id="template-date">
-        <div class="calendar-page">
-            <div class="calendar-header"><span class="calendar-year"></span></div>
-            <div class="calendar-body">
-                <div class="calendar-day-name"></div>
-                <div class="calendar-day-number"></div>
-                <div class="calendar-month"></div>
+        <div class="editor-container">
+            <div class="calendar-page">
+                <div class="calendar-header"></div>
+                <div class="calendar-body">
+                    <div class="calendar-day-name"></div>
+                    <div class="calendar-day-number"></div>
+                    <div class="calendar-month"></div>
+                </div>
             </div>
         </div>
     </template>
 
     <template id="template-time">
-        <div class="clock-time"><span class="clock-hm">00:00</span><span class="clock-seconds">00</span></div>
+        <div class="editor-container">
+            <div class="clock-time">
+                <span class="clock-hm">00:00</span><span class="clock-seconds">00</span>
+            </div>
+        </div>
     </template>
 
+    <template id="template-iframe">
+        <div class="editor-container" style="height: 400px; width: 550px;">
+            <div class="editor-toolbar"><input type="text" placeholder="Collez l'URL ici..." style="flex-grow: 1;" onchange="loadIframe(this)"></div>
+            <iframe src="" style="flex-grow: 1; border: none; background: white;"></iframe>
+        </div>
+    </template>
+	
+	<template id="template-outilsprofs">
+		<div class="editor-container" style="height: 500px; width: 800px;">
+			<iframe src="https://ecolebernardet.github.io/outilsprofs" 
+                style="flex-grow: 1; border: none; background: white;" 
+                allow="microphone"></iframe>
+		</div>
+	</template>
+
+    <input type="file" id="bg-upload" style="display:none" accept="image/*" onchange="handleBgUpload(this)">
+    
     <script>
         let widgetCount = 0;
+        let historyStack = [];
 
-        function format(command, value = null) {
-            document.execCommand(command, false, value);
+        function toggleMenu() { document.getElementById('tools-menu').classList.toggle('active'); document.getElementById('bg-submenu').classList.remove('active'); }
+        function toggleSubMenu(e) { e.stopPropagation(); document.getElementById('bg-submenu').classList.toggle('active'); }
+        
+        document.getElementById('board').onclick = (e) => { 
+            if(e.target.id === 'board') {
+                document.getElementById('tools-menu').classList.remove('active');
+                document.getElementById('bg-submenu').classList.remove('active');
+            }
+        };
+
+        function format(cmd, val = null) { takeSnapshot(); document.execCommand(cmd, false, val); saveBoard(); }
+        function formatFontSize(px) { takeSnapshot(); document.execCommand('fontSize', false, "7"); document.querySelectorAll('font[size="7"]').forEach(f => { f.removeAttribute('size'); f.style.fontSize = px + 'px'; }); saveBoard(); }
+        function formatFontFamily(f) { takeSnapshot(); document.execCommand('fontName', false, f); saveBoard(); }
+
+        function loadIframe(input) {
+            const url = input.value;
+            const iframe = input.parentElement.nextElementSibling;
+            iframe.src = url.startsWith('http') ? url : 'https://' + url;
             saveBoard();
         }
 
@@ -190,111 +290,158 @@
             const widgets = [];
             document.querySelectorAll('.widget').forEach(w => {
                 const editor = w.querySelector('.editor-content');
-                widgets.push({
-                    type: w.dataset.type,
-                    top: w.style.top, left: w.style.left, zIndex: w.style.zIndex,
-                    content: editor ? editor.innerHTML : null
+                const iframe = w.querySelector('iframe');
+                const container = w.querySelector('.editor-container');
+                widgets.push({ 
+                    type: w.dataset.type, top: w.style.top, left: w.style.left, 
+                    width: container ? container.style.width : null,
+                    height: container ? container.style.height : null,
+                    content: editor ? editor.innerHTML : (iframe ? iframe.src : null) 
                 });
             });
             localStorage.setItem('bureauProfData', JSON.stringify(widgets));
         }
 
-        function loadBoard() {
-            const data = localStorage.getItem('bureauProfData');
-            if (data) {
-                JSON.parse(data).forEach(wData => {
-                    const w = createWidget(wData.type, false);
-                    if (w) {
-                        w.style.top = wData.top; w.style.left = wData.left; w.style.zIndex = wData.zIndex;
-                        const editor = w.querySelector('.editor-content');
-                        if (editor && wData.content) editor.innerHTML = wData.content;
-                    }
-                });
-            } else { createWidget('text'); }
-        }
-
         function createWidget(type, autoSave = true) {
+            if (autoSave) takeSnapshot();
             widgetCount++;
             const template = document.getElementById(`template-${type}`);
-            if (!template) return;
-
             const widget = document.createElement('div');
             widget.className = 'widget';
             widget.dataset.type = type;
-            widget.style.left = (50 + (widgetCount * 20)) + 'px';
-            widget.style.top = (50 + (widgetCount * 20)) + 'px';
+            widget.tabIndex = 0;
+            widget.style.left = (60 + (widgetCount * 20)) + 'px';
+            widget.style.top = (60 + (widgetCount * 20)) + 'px';
 
-            const titles = { 'text': 'Note', 'homework': 'Devoirs', 'date': 'Agenda', 'time': 'Horloge' };
-            
-            widget.innerHTML = `
-                <div class="widget-header">
-                    <span class="widget-title">${titles[type] || 'Widget'}</span>
-                    <span class="close-btn" onclick="this.closest('.widget').remove(); saveBoard();">×</span>
-                </div>
-                <div class="widget-content"></div>
-            `;
+            const titles = { 'text': 'Note', 'homework': 'Devoirs', 'date': 'Agenda', 'time': 'Horloge', 'iframe': 'Fenêtre Web', 'outilsprofs': 'OutilsProfs' };
+            widget.innerHTML = `<div class="widget-header"><span class="widget-title">${titles[type]}</span><span class="close-btn" onclick="takeSnapshot(); this.closest('.widget').remove(); saveBoard();">×</span></div><div class="widget-content"></div>`;
 
             const contentClone = template.content.cloneNode(true);
-            
+            const toolbarPlaceholder = contentClone.querySelector('.editor-toolbar-placeholder');
+            if (toolbarPlaceholder) toolbarPlaceholder.outerHTML = document.getElementById('toolbar-html').innerHTML;
+
             if (type === 'date') {
                 const now = new Date();
-                contentClone.querySelector('.calendar-year').textContent = now.getFullYear();
                 contentClone.querySelector('.calendar-day-name').textContent = now.toLocaleDateString('fr-FR', {weekday:'long'});
                 contentClone.querySelector('.calendar-day-number').textContent = now.getDate();
                 contentClone.querySelector('.calendar-month').textContent = now.toLocaleDateString('fr-FR', {month:'long'});
-            } else if (type === 'time') {
-                setTimeout(() => updateClock(widget), 10);
-            }
+            } else if (type === 'time') { updateClock(widget); }
 
             widget.querySelector('.widget-content').appendChild(contentClone);
             makeDraggable(widget);
             document.getElementById('board').appendChild(widget);
+            
+            const container = widget.querySelector('.editor-container');
+            if(container) new ResizeObserver(() => saveBoard()).observe(container);
 
             if (autoSave) saveBoard();
             return widget;
         }
 
-        function updateClock(widget) {
-            function tick() {
-                if (!document.body.contains(widget)) return;
+        function updateClock(w) {
+            setInterval(() => {
                 const now = new Date();
-                const hDisplay = widget.querySelector('.clock-hm');
-                const sDisplay = widget.querySelector('.clock-seconds');
-                if(hDisplay) hDisplay.textContent = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-                if(sDisplay) sDisplay.textContent = now.getSeconds().toString().padStart(2,'0');
-                setTimeout(tick, 1000);
-            }
-            tick();
+                const hm = w.querySelector('.clock-hm'), s = w.querySelector('.clock-seconds');
+                if (hm) hm.textContent = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+                if (s) s.textContent = now.getSeconds().toString().padStart(2,'0');
+            }, 1000);
         }
 
         function makeDraggable(elmnt) {
             const header = elmnt.querySelector('.widget-header');
             header.onmousedown = (e) => {
-                if (e.target.className === 'close-btn' || e.target.closest('.editor-toolbar')) return;
-                
+                if (e.target.className === 'close-btn' || e.target.tagName === 'INPUT' || e.target.closest('.editor-toolbar')) return;
                 document.querySelectorAll('.widget').forEach(w => w.style.zIndex = "1");
                 elmnt.style.zIndex = "1000";
-
                 let pos3 = e.clientX, pos4 = e.clientY;
                 document.onmousemove = (e) => {
-                    let pos1 = pos3 - e.clientX, pos2 = pos4 - e.clientY;
+                    elmnt.style.top = (elmnt.offsetTop - (pos4 - e.clientY)) + "px";
+                    elmnt.style.left = (elmnt.offsetLeft - (pos3 - e.clientX)) + "px";
                     pos3 = e.clientX; pos4 = e.clientY;
-                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-                    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
                 };
                 document.onmouseup = () => { document.onmousemove = null; saveBoard(); };
             };
         }
 
-        function clearBoard() {
-            if (confirm("Effacer tout le bureau ?")) {
-                document.querySelectorAll('.widget').forEach(w => w.remove());
-                localStorage.removeItem('bureauProfData');
-                widgetCount = 0;
+        function applyBackground(bg) {
+            const board = document.getElementById('board');
+            board.style.backgroundImage = bg.startsWith('url') ? bg : 'none';
+            board.style.backgroundColor = bg.startsWith('#') ? bg : (bg === 'none' ? 'var(--bg-color)' : 'transparent');
+            board.style.backgroundSize = bg.includes('seyes') ? '800px' : (bg.includes('transparenttextures') ? 'auto' : 'cover');
+        }
+
+        function saveBg(bg) { localStorage.setItem('bureauProfBg', bg); }
+
+        function handleBgUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => { applyBackground(`url("${e.target.result}")`); saveBg(`url("${e.target.result}")`); };
+                reader.readAsDataURL(input.files[0]);
             }
         }
 
-        window.onload = loadBoard;
+        function takeSnapshot() {
+            const data = localStorage.getItem('bureauProfData');
+            if (data) historyStack.push(data);
+            if (historyStack.length > 20) historyStack.shift();
+        }
+
+        function undoAction() {
+            if (historyStack.length > 0) {
+                const lastState = JSON.parse(historyStack.pop());
+                document.querySelectorAll('.widget').forEach(w => w.remove());
+                lastState.forEach(wData => restoreWidget(wData));
+                saveBoard();
+            }
+        }
+
+        function exportConfig() {
+            const data = { bg: localStorage.getItem('bureauProfBg'), widgets: JSON.parse(localStorage.getItem('bureauProfData') || "[]") };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `bureau-prof-${new Date().toLocaleDateString()}.json`;
+            a.click();
+        }
+
+        function importConfig(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const data = JSON.parse(e.target.result);
+                    if (data.bg) localStorage.setItem('bureauProfBg', data.bg);
+                    if (data.widgets) localStorage.setItem('bureauProfData', JSON.stringify(data.widgets));
+                    window.location.reload();
+                };
+                reader.readAsText(input.files[0]);
+            }
+        }
+
+        function restoreWidget(wData) {
+            const w = createWidget(wData.type, false);
+            w.style.top = wData.top; w.style.left = wData.left;
+            const container = w.querySelector('.editor-container');
+            if (container && wData.width) container.style.width = wData.width;
+            if (container && wData.height) container.style.height = wData.height;
+            if (wData.content) {
+                const editor = w.querySelector('.editor-content');
+                const iframe = w.querySelector('iframe');
+                if (editor) editor.innerHTML = wData.content;
+                if (iframe) { iframe.src = wData.content; w.querySelector('input').value = wData.content; }
+            }
+        }
+
+        function clearBoard() { document.getElementById('modal-overlay').style.display = 'flex'; }
+        function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+        function confirmClearBoard() { takeSnapshot(); document.querySelectorAll('.widget').forEach(w => w.remove()); localStorage.removeItem('bureauProfData'); closeModal(); saveBoard(); }
+
+        window.onload = () => {
+            const savedBg = localStorage.getItem('bureauProfBg');
+            if (savedBg) applyBackground(savedBg);
+            const data = localStorage.getItem('bureauProfData');
+            if (data) { JSON.parse(data).forEach(wData => restoreWidget(wData)); } 
+            else { createWidget('text', false); }
+        };
     </script>
 </body>
 </html>
