@@ -303,10 +303,10 @@
 
 	<template id="template-youtube">
 		<div class="editor-container" style="height: 350px; width: 600px;">
-			<button class="exit-fs-btn" onclick="document.exitFullscreen()">✖ Quitter Plein Écran</button>
 			<div class="editor-toolbar">
-				<input type="text" placeholder="Lien YouTube (ex: https://youtu.be/...) " style="flex-grow: 1;" onchange="loadYoutube(this)">
+				<input type="text" placeholder="Collez le lien YouTube ici..." style="flex-grow: 1;" onchange="loadYoutube(this)">
 				<button onclick="toggleFullScreen(this.closest('.editor-container'))" title="Plein écran">⛶</button>
+				<button onclick="toggleTransparency(this)" title="Fond transparent">🫥</button>
 			</div>
 			<iframe src="" style="flex-grow: 1; border: none; background: #000;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 		</div>
@@ -381,7 +381,7 @@
             widget.style.left = (60 + (widgetCount * 20)) + 'px';
             widget.style.top = (60 + (widgetCount * 20)) + 'px';
 
-            const titles = { 'text': 'Note', 'homework': 'Devoirs', 'date': 'Agenda', 'time': 'Horloge', 'iframe': 'Fenêtre Web', 'outilsprofs': 'OutilsProfs' };
+            const titles = { 'text': 'Note', 'homework': 'Devoirs', 'date': 'Agenda', 'time': 'Horloge', 'iframe': 'Fenêtre Web', 'outilsprofs': 'OutilsProfs', 'youtube': 'Vidéo YouTube' };
             widget.innerHTML = `<div class="widget-header"><span class="widget-title">${titles[type]}</span><span class="close-btn" onclick="takeSnapshot(); this.closest('.widget').remove(); saveBoard();">×</span></div><div class="widget-content"></div>`;
 
             const contentClone = template.content.cloneNode(true);
@@ -454,7 +454,6 @@
     let url = input.value;
     let videoId = '';
     
-    // Extraction de l'ID vidéo pour différents formats d'URL
     if (url.includes('youtube.com/watch?v=')) {
         videoId = url.split('v=')[1].split('&')[0];
     } else if (url.includes('youtu.be/')) {
@@ -467,8 +466,6 @@
     if (videoId) {
         iframe.src = `https://www.youtube.com/embed/${videoId}`;
         saveBoard();
-    } else {
-        alert("Lien YouTube non valide");
     }
 }
 
