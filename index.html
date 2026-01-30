@@ -267,11 +267,13 @@
         }
 
         .agenda-header-title {
+			display: flex;
+			justify-content: space-between; /* Pousse les éléments aux extrémités */
+			align-items: center;
+			padding: 10px;
+			font-weight: bold;
             background: #4a90e2;
             color: white;
-            padding: 8px;
-            font-weight: bold;
-            text-align: center;
             font-size: 0.9em;
             text-transform: uppercase;
         }
@@ -294,14 +296,14 @@
         .agenda-time {
             font-weight: bold;
             color: #4a90e2;
-            font-size: 0.85em;
+            font-size: 1.2em;
             min-width: 45px;
         }
 
         .agenda-text {
             outline: none;
             flex-grow: 1;
-            font-size: 0.9em;
+            font-size: 1.2em;
             color: #333;
         }
 		
@@ -526,10 +528,9 @@
 	<template id="template-agenda">
         <div class="editor-container">
             <div class="agenda-container">
-                <div class="agenda-header-title">Menu du jour</div>
+                <div class="agenda-header-title"><span id="agenda-current-date"></span><span id="agenda-current-time"></span></div>
                 <div class="agenda-list">
-				
-                   <div class="agenda-item" draggable="true" ondragstart="handleRowDragStart(event)" ondragover="handleRowDragOver(event)" ondragend="handleRowDragEnd(event)">
+				    <div class="agenda-item" draggable="true" ondragstart="handleRowDragStart(event)" ondragover="handleRowDragOver(event)" ondragend="handleRowDragEnd(event)">
                         <span class="agenda-row-handle">⋮⋮</span>
                         <span class="agenda-time" contenteditable="true">08:30</span>
                         <div class="agenda-text" contenteditable="true">Accueil / Appel / Rituels</div>
@@ -557,6 +558,11 @@
                         <span class="agenda-row-handle">⋮⋮</span>
                         <div class="agenda-time" contenteditable="true">11:45</div>
                         <div class="agenda-text" contenteditable="true">Fin de la matinée</div>
+						<span class="agenda-delete-row" onclick="deleteAgendaLine(this)" title="Supprimer la ligne">×</span>
+                    </div>
+					<div class="agenda-item" draggable="true" ondragstart="handleRowDragStart(event)" ondragover="handleRowDragOver(event)" ondragend="handleRowDragEnd(event)">
+                        <span class="agenda-row-handle">⋮⋮</span>
+                        <div class="agenda-time" contenteditable="true">---------------------------</div>
 						<span class="agenda-delete-row" onclick="deleteAgendaLine(this)" title="Supprimer la ligne">×</span>
                     </div>
 					<div class="agenda-item" draggable="true" ondragstart="handleRowDragStart(event)" ondragover="handleRowDragOver(event)" ondragend="handleRowDragEnd(event)">
@@ -677,6 +683,28 @@
             }, 10);
         });
     }
+
+	function updateClock() {
+    const now = new Date();
+    
+    // Formatage de la date (ex: vendredi 30 janvier)
+    const optionsDate = { weekday: 'long', day: 'numeric', month: 'long' };
+    const dateStr = now.toLocaleDateString('fr-FR', optionsDate);
+    
+    // Formatage de l'heure (ex: 12:45:02)
+    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // Mise à jour des éléments dans le DOM
+    const dateEl = document.getElementById('agenda-current-date');
+    const timeEl = document.getElementById('agenda-current-time');
+    
+    if (dateEl) dateEl.textContent = dateStr;
+    if (timeEl) timeEl.textContent = timeStr;
+}
+
+// Lancer l'horloge
+setInterval(updateClock, 1000);
+updateClock(); // Appel immédiat pour éviter le délai d'une seconde
 
     // --- CRÉATION DES WIDGETS ---
     function createWidget(type, x = '100px', y = '100px', snapshot = true) {
