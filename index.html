@@ -515,218 +515,170 @@
 <script>
     let board = document.getElementById('board');
     let history = [];
-	let isInitialLoading = true; // Empêche la sauvegarde pendant le chargement
+    let isInitialLoading = true;
 
-    // --- INITIALISATION & SAUVEGARDE ---
-   window.onload = () => {
+    window.onload = () => {
         const savedBg = localStorage.getItem('boardBackground');
         if (savedBg) applyBackground(savedBg);
-        
-        // 1. On charge les widgets
         loadBoard();
-        
-        // 2. On attend un court instant que tout soit rendu dans le DOM
-        // avant d'autoriser à nouveau la sauvegarde
         setTimeout(() => {
             isInitialLoading = false;
-            console.log("Système de sauvegarde activé.");
         }, 1000); 
-
-        setInterval(updateDateTime, 1000);
+        setInterval(updateClock, 1000);
     };
 
     function saveBoard() {
-    if (isInitialLoading) return;
-
-    const widgets = [];
-    document.querySelectorAll('.widget').forEach(w => {
-        // On cherche l'éditeur de texte classique OU le container de l'agenda
-        const content = w.querySelector('.editor-content');
-        const agenda = w.querySelector('.agenda-container');
-        const iframe = w.querySelector('iframe');
-        
-        // Si c'est un agenda, on sauvegarde tout son HTML interne (les lignes)
-        // Sinon, on prend le contenu de l'éditeur classique
-        let htmlContent = null;
-        if (agenda) {
-            htmlContent = agenda.innerHTML;
-        } else if (content) {
-            htmlContent = content.innerHTML;
-        }
-        
-        widgets.push({
-            type: w.dataset.type,
-            top: w.style.top,
-            left: w.style.left,
-            width: w.querySelector('.editor-container').style.width,
-            height: w.querySelector('.editor-container').style.height,
-            html: htmlContent, // Sauvegarde ici
-            iframeSrc: iframe ? iframe.src : null,
-            transparent: w.dataset.transparent === "true",
-            bgColor: w.dataset.bgColor || "#ffffff",
-            pinned: w.dataset.pinned === "true"
-        });
-    });
-    localStorage.setItem('profBoardConfig', JSON.stringify(widgets));
-}
-
-    function loadBoard() {
-    const data = localStorage.getItem('profBoardConfig');
-    if (!data) return;
-    
-    const parsedData = JSON.parse(data);
-    parsedData.forEach(w => {
-        const widget = createWidget(w.type, w.left, w.top, false);
-        const container = widget.querySelector('.editor-container');
-        
-        if (container) {
-            container.style.width = w.width;
-            container.style.height = w.height;
-        }
-        
-        setTimeout(() => {
-            const editor = widget.querySelector('.editor-content');
-            if (w.html && editor) {
-                editor.innerHTML = w.html;
+        if (isInitialLoading) return;
+        const widgets = [];
+        document.querySelectorAll('.widget').forEach(w => {
+            const content = w.querySelector('.editor-content');
+            const agendaList = w.querySelector('.agenda-list');
+            const iframe = w.querySelector('iframe');
+            
+            let htmlContent = null;
+            if (agendaList) {
+                htmlContent = agendaList.innerHTML;
+            } else if (content) {
+                htmlContent = content.innerHTML;
             }
-            const iframe = widget.querySelector('iframe');
-            if (w.iframeSrc && iframe) {
-                iframe.src = w.iframeSrc;
-            }
-            if (w.transparent) {
-                applyTransparency(widget, true);
-            } else if (w.bgColor) {
-                widget.style.background = w.bgColor;
-                widget.dataset.bgColor = w.bgColor;
-            }
-
-            if (w.pinned) {
-                widget.dataset.pinned = "true";
-                widget.style.zIndex = "2000";
-                widget.classList.add('pinned');
-            }
-        }, 10);
-    });
-}
-
-	function updateClock() {
-    const now = new Date();
-    
-    const optionsDate = { weekday: 'long', day: 'numeric', month: 'long' };
-    const dateStr = now.toLocaleDateString('fr-FR', optionsDate);
-    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
-    // Mise à jour de TOUS les agendas présents sur le bureau
-    document.querySelectorAll('.agenda-current-date').forEach(el => {
-        el.textContent = dateStr;
-    });
-    document.querySelectorAll('.agenda-current-time').forEach(el => {
-        el.textContent = timeStr;
-    });
-
-    // On appelle aussi la mise à jour des widgets Date et Heure classiques
-    updateDateTime(); 
-}
-
-	// --- GESTION DU VERROUILLAGE (PIN) ---
-function togglePin(widget) {
-    const isPinned = widget.dataset.pinned === "true";
-    widget.dataset.pinned = !isPinned;
-    
-    if (!isPinned) {
-        widget.style.zIndex = "2000"; 
-        widget.classList.add('pinned');
-    } else {
-        widget.style.zIndex = "1000";
-        widget.classList.remove('pinned');
-    }
-    saveBoard();
-}
-
-function bringToFront(widget) {
-    // On ne change l'index que si le widget n'est pas déjà épinglé au-dessus
-    if (widget.dataset.pinned === "true") return;
-
-    document.querySelectorAll('.widget').forEach(w => {
-        // On remet à 1 seulement ceux qui ne sont pas épinglés
-        if (w.dataset.pinned !== "true") {
-            w.style.zIndex = "1";
-        }
-    });
-    widget.style.zIndex = "1000";
-}
-
-
-    // --- CRÉATION DES WIDGETS ---
-    function createWidget(type, x = '100px', y = '100px', snapshot = true) {
-    if (snapshot) takeSnapshot();
-    const widget = document.createElement('div');
-    widget.className = 'widget';
-    widget.dataset.type = type;
-    widget.style.left = x;
-    widget.style.top = y;
-    widget.tabIndex = 0;
-    
-    widget.addEventListener('mousedown', () => bringToFront(widget));
-    
-    widget.innerHTML = `
-        <div class="drag-handle" title="Déplacer">✥</div>
-        <div class="widget-pin-handle" onclick="togglePin(this.closest('.widget'))" title="Épingler au premier plan">📌</div>
-        <div class="widget-close-handle" onclick="takeSnapshot(); this.closest('.widget').remove(); saveBoard();" title="Fermer">×</div>
-        <div class="widget-content"></div>`;
-
-    const contentZone = widget.querySelector('.widget-content');
-    const template = document.getElementById(`template-${type}`);
-    contentZone.appendChild(template.content.cloneNode(true));
-
-    const toolbarPlaceholder = widget.querySelector('.editor-toolbar-placeholder');
-    if (toolbarPlaceholder) {
-        toolbarPlaceholder.innerHTML = document.getElementById('toolbar-html').innerHTML;
-    }
-
-    board.appendChild(widget);
-    makeDraggable(widget);
-
-    // --- AJOUT : Force la mise à jour immédiate de l'heure et date pour l'agenda ---
-    if (type === 'agenda') {
-        updateClock();
-        
-        // On récupère toutes les lignes (celles du template qui viennent d'être injectées)
-        widget.querySelectorAll('.agenda-item').forEach(item => {
-            // Pour chaque zone de texte dans la ligne
-            item.querySelectorAll('[contenteditable="true"]').forEach(el => {
-                // Si la souris entre dans le texte, on coupe le "drag" pour cliquer librement
-                el.addEventListener('mouseenter', () => {
-                    item.draggable = false;
-                });
-                // Si la souris sort, on réactive le "drag" pour pouvoir déplacer la ligne
-                el.addEventListener('mouseleave', () => {
-                    item.draggable = true;
-                });
+            
+            widgets.push({
+                type: w.dataset.type,
+                top: w.style.top,
+                left: w.style.left,
+                width: w.querySelector('.editor-container').style.width,
+                height: w.querySelector('.editor-container').style.height,
+                html: htmlContent,
+                iframeSrc: iframe ? iframe.src : null,
+                transparent: w.dataset.transparent === "true",
+                bgColor: w.dataset.bgColor || "#ffffff",
+                pinned: w.dataset.pinned === "true"
             });
         });
+        localStorage.setItem('profBoardConfig', JSON.stringify(widgets));
     }
 
-    const editor = widget.querySelector('.editor-content');
-    if (editor) {
-        editor.addEventListener('mouseup', () => syncFontSize(widget));
-        editor.addEventListener('keyup', () => syncFontSize(widget));
+    function loadBoard() {
+        const data = localStorage.getItem('profBoardConfig');
+        if (!data) return;
+        const parsedData = JSON.parse(data);
+        parsedData.forEach(w => {
+            const widget = createWidget(w.type, w.left, w.top, false);
+            const container = widget.querySelector('.editor-container');
+            if (container) {
+                container.style.width = w.width;
+                container.style.height = w.height;
+            }
+            setTimeout(() => {
+                const editor = widget.querySelector('.editor-content');
+                const agendaList = widget.querySelector('.agenda-list');
+                if (w.html) {
+                    if (agendaList) {
+                        agendaList.innerHTML = w.html;
+                        // Réattacher les événements sur les éléments chargés
+                        agendaList.querySelectorAll('.agenda-item').forEach(item => {
+                            attachAgendaItemEvents(item);
+                        });
+                    } else if (editor) {
+                        editor.innerHTML = w.html;
+                    }
+                }
+                const iframe = widget.querySelector('iframe');
+                if (w.iframeSrc && iframe) iframe.src = w.iframeSrc;
+                if (w.transparent) applyTransparency(widget, true);
+                else if (w.bgColor) {
+                    widget.style.background = w.bgColor;
+                    widget.dataset.bgColor = w.bgColor;
+                }
+                if (w.pinned) {
+                    widget.dataset.pinned = "true";
+                    widget.style.zIndex = "2000";
+                    widget.classList.add('pinned');
+                }
+            }, 50);
+        });
     }
 
-    if (!isInitialLoading) {
+    function updateClock() {
+        const now = new Date();
+        const optionsDate = { weekday: 'long', day: 'numeric', month: 'long' };
+        const dateStr = now.toLocaleDateString('fr-FR', optionsDate);
+        const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        document.querySelectorAll('.agenda-current-date').forEach(el => el.textContent = dateStr);
+        document.querySelectorAll('.agenda-current-time').forEach(el => el.textContent = timeStr);
+        updateDateTime(); 
+    }
+
+    function togglePin(widget) {
+        const isPinned = widget.dataset.pinned === "true";
+        widget.dataset.pinned = !isPinned;
+        if (!isPinned) {
+            widget.style.zIndex = "2000"; 
+            widget.classList.add('pinned');
+        } else {
+            widget.style.zIndex = "1000";
+            widget.classList.remove('pinned');
+        }
         saveBoard();
     }
-    
-    return widget;
-}
 
-    // --- SYNCHRONISATION TAILLE POLICE ---
+    function bringToFront(widget) {
+        if (widget.dataset.pinned === "true") return;
+        document.querySelectorAll('.widget').forEach(w => {
+            if (w.dataset.pinned !== "true") w.style.zIndex = "1";
+        });
+        widget.style.zIndex = "1000";
+    }
+
+    function createWidget(type, x = '100px', y = '100px', snapshot = true) {
+        if (snapshot) takeSnapshot();
+        const widget = document.createElement('div');
+        widget.className = 'widget';
+        widget.dataset.type = type;
+        widget.style.left = x;
+        widget.style.top = y;
+        widget.tabIndex = 0;
+        widget.addEventListener('mousedown', () => bringToFront(widget));
+        widget.innerHTML = `
+            <div class="drag-handle" title="Déplacer">✥</div>
+            <div class="widget-pin-handle" onclick="togglePin(this.closest('.widget'))" title="Épingler au premier plan">📌</div>
+            <div class="widget-close-handle" onclick="takeSnapshot(); this.closest('.widget').remove(); saveBoard();" title="Fermer">×</div>
+            <div class="widget-content"></div>`;
+        const contentZone = widget.querySelector('.widget-content');
+        const template = document.getElementById(`template-${type}`);
+        contentZone.appendChild(template.content.cloneNode(true));
+        const toolbarPlaceholder = widget.querySelector('.editor-toolbar-placeholder');
+        if (toolbarPlaceholder) toolbarPlaceholder.innerHTML = document.getElementById('toolbar-html').innerHTML;
+        board.appendChild(widget);
+        makeDraggable(widget);
+        if (type === 'agenda') {
+            updateClock();
+            widget.querySelectorAll('.agenda-item').forEach(item => attachAgendaItemEvents(item));
+        }
+        const editor = widget.querySelector('.editor-content');
+        if (editor) {
+            editor.addEventListener('mouseup', () => syncFontSize(widget));
+            editor.addEventListener('keyup', () => syncFontSize(widget));
+        }
+        if (!isInitialLoading) saveBoard();
+        return widget;
+    }
+
+    function attachAgendaItemEvents(item) {
+        item.querySelectorAll('[contenteditable="true"]').forEach(el => {
+            el.addEventListener('mouseenter', () => item.draggable = false);
+            el.addEventListener('mouseleave', () => item.draggable = true);
+            el.addEventListener('input', saveBoard);
+        });
+        item.addEventListener('dragstart', handleRowDragStart);
+        item.addEventListener('dragover', handleRowDragOver);
+        item.addEventListener('dragend', handleRowDragEnd);
+    }
+
     function syncFontSize(widget) {
         const toolbar = widget.querySelector('.editor-toolbar');
         if (!toolbar) return;
         const sizeInput = toolbar.querySelector('input[type="number"]');
-        
-        // Récupère la taille de l'élément parent sous le curseur
         const selection = window.getSelection();
         if (selection.rangeCount > 0) {
             let container = selection.anchorNode.parentElement;
@@ -735,13 +687,12 @@ function bringToFront(widget) {
         }
     }
 
-		// --- DRAG & DROP ---
-		function makeDraggable(elmnt) {
-		const handle = elmnt.querySelector('.drag-handle');
-		handle.onmousedown = (e) => {
-        e.preventDefault();
-        bringToFront(elmnt); // Utilisation de la nouvelle fonction
-        let pos3 = e.clientX, pos4 = e.clientY;
+    function makeDraggable(elmnt) {
+        const handle = elmnt.querySelector('.drag-handle');
+        handle.onmousedown = (e) => {
+            e.preventDefault();
+            bringToFront(elmnt);
+            let pos3 = e.clientX, pos4 = e.clientY;
             document.onmousemove = (e) => {
                 elmnt.style.top = (elmnt.offsetTop - (pos4 - e.clientY)) + "px";
                 elmnt.style.left = (elmnt.offsetLeft - (pos3 - e.clientX)) + "px";
@@ -751,23 +702,15 @@ function bringToFront(widget) {
         };
     }
 
-    // --- FONCTIONS D'ÉDITION ---
     function format(cmd, val = null) {
         document.execCommand(cmd, false, val);
         saveBoard();
     }
 
     function formatFontSize(size) {
-        // 1. On force le focus sur l'éditeur si on a perdu la main
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0) return;
-
-        // 2. On utilise une commande native pour marquer la sélection
-        // On utilise la taille "7" qui est le maximum standard (factice)
         document.execCommand("fontSize", false, "7");
-
-        // 3. On récupère les éléments que le navigateur vient de créer
-        // et on remplace la taille par les pixels exacts
         const fontElements = document.getElementsByTagName("font");
         for (let i = 0; i < fontElements.length; i++) {
             if (fontElements[i].size === "7") {
@@ -775,16 +718,13 @@ function bringToFront(widget) {
                 fontElements[i].style.fontSize = size + "px";
             }
         }
-        
         saveBoard();
     }
 
     function formatFontFamily(font) {
         document.execCommand('fontName', false, font);
         const selection = window.getSelection();
-        if (selection.anchorNode) {
-            selection.anchorNode.parentElement.style.fontFamily = font;
-        }
+        if (selection.anchorNode) selection.anchorNode.parentElement.style.fontFamily = font;
         saveBoard();
     }
 
@@ -807,15 +747,14 @@ function bringToFront(widget) {
         const container = widget.querySelector('.editor-container');
         const editor = widget.querySelector('.editor-content');
         const calendar = widget.querySelector('.calendar-page');
-
         if (enable) {
             widget.style.background = "transparent";
             widget.style.boxShadow = "none";
-            widget.style.border = "none"; // Ajout explicite
+            widget.style.border = "none";
             widget.dataset.transparent = "true";
             if (container) {
                 container.style.background = "transparent";
-                container.style.border = "none"; // Supprime la bordure de l'éditeur
+                container.style.border = "none";
             }
             if (editor) editor.style.background = "transparent";
             if (calendar) calendar.style.background = "transparent";
@@ -823,17 +762,16 @@ function bringToFront(widget) {
             const oldBg = widget.dataset.bgColor || "#ffffff";
             widget.style.background = oldBg;
             widget.style.boxShadow = "var(--shadow)";
-            widget.style.border = "2px solid transparent"; // Rétablit la bordure de base
+            widget.style.border = "2px solid transparent";
             widget.dataset.transparent = "false";
             if (container) {
                 container.style.background = "white";
-                container.style.border = "1px solid #eee"; // Rétablit la bordure de l'éditeur
+                container.style.border = "1px solid #eee";
             }
             if (calendar) calendar.style.background = "white";
         }
     }
 
-    // --- MULTIMÉDIA ---
     function loadIframe(input) {
         let url = input.value;
         if (url && !url.startsWith('http')) url = 'https://' + url;
@@ -846,7 +784,6 @@ function bringToFront(widget) {
         let videoId = "";
         if (url.includes("v=")) videoId = url.split("v=")[1].split("&")[0];
         else if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1];
-        
         if (videoId) {
             input.closest('.editor-container').querySelector('iframe').src = `https://www.youtube.com/embed/${videoId}`;
             saveBoard();
@@ -854,8 +791,7 @@ function bringToFront(widget) {
     }
 
     function toggleYoutubeView(btn, display) {
-        const iframe = btn.closest('.editor-container').querySelector('iframe');
-        iframe.style.display = display;
+        btn.closest('.editor-container').querySelector('iframe').style.display = display;
     }
 
     function toggleFullScreen(elem) {
@@ -863,29 +799,24 @@ function bringToFront(widget) {
         else document.exitFullscreen();
     }
 
-    // --- GESTION DU FOND ET MENU ---
     function toggleMenu() { document.getElementById('tools-menu').classList.toggle('active'); }
-	
-	// --- FERMETURE AUTOMATIQUE DES MENUS ---
-	document.addEventListener('mousedown', (e) => {
-		const toolsMenu = document.getElementById('tools-menu');
-		const bgSubmenu = document.getElementById('bg-submenu');
-		const mainBtn = document.getElementById('main-tool-btn');
-
-    // Si le clic est en dehors du menu ET en dehors du bouton principal
-		if (!toolsMenu.contains(e.target) && !mainBtn.contains(e.target)) {
-			toolsMenu.classList.remove('active');
-			bgSubmenu.classList.remove('active');
-		}
-	});
+    
+    document.addEventListener('mousedown', (e) => {
+        const toolsMenu = document.getElementById('tools-menu');
+        const bgSubmenu = document.getElementById('bg-submenu');
+        const mainBtn = document.getElementById('main-tool-btn');
+        if (toolsMenu && !toolsMenu.contains(e.target) && !mainBtn.contains(e.target)) {
+            toolsMenu.classList.remove('active');
+            if (bgSubmenu) bgSubmenu.classList.remove('active');
+        }
+    });
 
     function toggleSubMenu(e) { e.stopPropagation(); document.getElementById('bg-submenu').classList.toggle('active'); }
 
     function applyBackground(bg) {
-        const board = document.getElementById('board');
-        if (bg === 'none') board.style.background = "var(--bg-color)";
-        else if (bg.startsWith('#')) board.style.background = bg;
-        else board.style.background = bg;
+        const boardEl = document.getElementById('board');
+        if (bg === 'none') boardEl.style.background = "var(--bg-color)";
+        else boardEl.style.background = bg;
     }
 
     function saveBg(bg) { localStorage.setItem('boardBackground', bg); }
@@ -903,103 +834,74 @@ function bringToFront(widget) {
         }
     }
 
-    // --- UTILITAIRES ---
     function updateDateTime() {
-    const now = new Date();
-    const days = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-    const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+        const now = new Date();
+        const days = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+        const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+        document.querySelectorAll('.widget[data-type="date"]').forEach(w => {
+            const dName = w.querySelector('.calendar-day-name');
+            const dNum = w.querySelector('.calendar-day-number');
+            const dMonth = w.querySelector('.calendar-month');
+            if(dName) dName.textContent = days[now.getDay()];
+            if(dNum) dNum.textContent = now.getDate();
+            if(dMonth) dMonth.textContent = months[now.getMonth()];
+        });
+        document.querySelectorAll('.widget[data-type="time"]').forEach(w => {
+            const hm = w.querySelector('.clock-hm');
+            const sec = w.querySelector('.clock-seconds');
+            if(hm) hm.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            if(sec) sec.textContent = now.getSeconds().toString().padStart(2, '0');
+        });
+    }
 
-    document.querySelectorAll('.widget[data-type="date"]').forEach(w => {
-        const dName = w.querySelector('.calendar-day-name');
-        const dNum = w.querySelector('.calendar-day-number');
-        const dMonth = w.querySelector('.calendar-month');
-        if(dName) dName.textContent = days[now.getDay()];
-        if(dNum) dNum.textContent = now.getDate();
-        if(dMonth) dMonth.textContent = months[now.getMonth()];
-    });
-
-    document.querySelectorAll('.widget[data-type="time"]').forEach(w => {
-        const hm = w.querySelector('.clock-hm');
-        const sec = w.querySelector('.clock-seconds');
-        if(hm) hm.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        if(sec) sec.textContent = now.getSeconds().toString().padStart(2, '0');
-    });
-}
-
-	let draggingRow = null;
-
+    let draggingRow = null;
     function handleRowDragStart(e) {
         draggingRow = e.currentTarget;
         e.currentTarget.classList.add('dragging');
     }
-
     function handleRowDragOver(e) {
         e.preventDefault();
         const list = e.currentTarget.parentNode;
         const afterElement = getDragAfterElement(list, e.clientY);
-        if (afterElement == null) {
-            list.appendChild(draggingRow);
-        } else {
-            list.insertBefore(draggingRow, afterElement);
-        }
+        if (afterElement == null) list.appendChild(draggingRow);
+        else list.insertBefore(draggingRow, afterElement);
     }
-
     function handleRowDragEnd(e) {
         e.currentTarget.classList.remove('dragging');
         draggingRow = null;
         saveBoard();
     }
-
     function getDragAfterElement(container, y) {
         const draggableElements = [...container.querySelectorAll('.agenda-item:not(.dragging)')];
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
+            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+            else return closest;
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    // Mise à jour de la fonction d'ajout pour inclure les événements de drag
-    // Fonction pour supprimer une ligne
     function deleteAgendaLine(btn) {
-        {btn.closest('.agenda-item').remove();
-            saveBoard();
-        }
+        btn.closest('.agenda-item').remove();
+        saveBoard();
     }
 
-    // Mise à jour de la fonction d'ajout (inclure le bouton de suppression)
     function addAgendaLine(button) {
-    const list = button.closest('.agenda-container').querySelector('.agenda-list');
-    const newItem = document.createElement('div');
-    newItem.className = 'agenda-item';
-    newItem.draggable = true;
+        const list = button.closest('.agenda-container').querySelector('.agenda-list');
+        const newItem = document.createElement('div');
+        newItem.className = 'agenda-item';
+        newItem.draggable = true;
+        newItem.innerHTML = `
+            <span class="agenda-row-handle">⋮⋮</span>
+            <span class="agenda-time" contenteditable="true">00:00</span>
+            <div class="agenda-text" contenteditable="true">...</div>
+            <span class="agenda-delete-row" onclick="deleteAgendaLine(this)" title="Supprimer la ligne">×</span>
+        `;
+        attachAgendaItemEvents(newItem);
+        list.appendChild(newItem);
+        saveBoard();
+    }
     
-    // --- GESTION DU FOCUS PRÉCIS ---
-    // On désactive le drag quand la souris entre dans une zone éditable
-    newItem.querySelectorAll('[contenteditable="true"]').forEach(el => {
-        el.onmouseenter = () => newItem.draggable = false;
-        el.onmouseleave = () => newItem.draggable = true;
-    });
-
-    newItem.addEventListener('dragstart', handleRowDragStart);
-    newItem.addEventListener('dragover', handleRowDragOver);
-    newItem.addEventListener('dragend', handleRowDragEnd);
-    newItem.addEventListener('input', saveBoard);
-    
-    newItem.innerHTML = `
-        <span class="agenda-row-handle">⋮⋮</span>
-        <span class="agenda-time" contenteditable="true">00:00</span>
-        <div class="agenda-text" contenteditable="true">...</div>
-        <span class="agenda-delete-row" onclick="deleteAgendaLine(this)" title="Supprimer la ligne">×</span>
-    `;
-    list.appendChild(newItem);
-    saveBoard();
-}
-	
     function takeSnapshot() {
         history.push(localStorage.getItem('profBoardConfig'));
         if (history.length > 20) history.shift();
@@ -1014,32 +916,45 @@ function bringToFront(widget) {
         }
     }
 
-	function exportConfig() {
-    const widgets = [];
-    document.querySelectorAll('.widget').forEach(w => {
-        const content = w.querySelector('.editor-content');
-        const iframe = w.querySelector('iframe');
-        
-        widgets.push({
-            type: w.dataset.type,
-            top: w.style.top,
-            left: w.style.left,
-            width: w.querySelector('.editor-container').style.width,
-            height: w.querySelector('.editor-container').style.height,
-            html: content ? content.innerHTML : null,
-            iframeSrc: iframe ? iframe.src : null,
-            transparent: w.dataset.transparent === "true",
-            bgColor: w.dataset.bgColor || "#ffffff",
-            pinned: w.dataset.pinned === "true" // AJOUT ICI
+    function exportConfig() {
+        const widgets = [];
+        document.querySelectorAll('.widget').forEach(w => {
+            const content = w.querySelector('.editor-content');
+            const agendaList = w.querySelector('.agenda-list');
+            const iframe = w.querySelector('iframe');
+            
+            let htmlContent = null;
+            // On utilise la même logique que saveBoard()
+            if (agendaList) {
+                htmlContent = agendaList.innerHTML;
+            } else if (content) {
+                htmlContent = content.innerHTML;
+            }
+            
+            widgets.push({
+                type: w.dataset.type,
+                top: w.style.top,
+                left: w.style.left,
+                width: w.querySelector('.editor-container').style.width,
+                height: w.querySelector('.editor-container').style.height,
+                html: htmlContent,
+                iframeSrc: iframe ? iframe.src : null,
+                transparent: w.dataset.transparent === "true",
+                bgColor: w.dataset.bgColor || "#ffffff",
+                pinned: w.dataset.pinned === "true"
+            });
         });
-    });
 
-        // Génération de la date au format AAAA-MM-JJ
+        const config = {
+            widgets: widgets,
+            background: localStorage.getItem('boardBackground') || 'none'
+        };
+
         const now = new Date();
         const dateStr = now.toISOString().split('T')[0];
         const fileName = `lebureauduprof_export_${dateStr}.json`;
 
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(widgets));
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config));
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", fileName);
@@ -1047,66 +962,39 @@ function bringToFront(widget) {
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
     }
-	
-	async function importConfig(event) {
+    
+    async function importConfig(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
-                const widgetsData = JSON.parse(e.target.result);
-                
-                // 1. Nettoyage et Snapshot
+                const importedData = JSON.parse(e.target.result);
                 takeSnapshot();
+                
+                // On sépare les widgets du fond d'écran selon la structure du fichier
+                const widgets = importedData.widgets || importedData; // Rétrocompatibilité
+                const background = importedData.background || 'none';
+
+                // 1. Nettoyage
                 document.querySelectorAll('.widget').forEach(w => w.remove());
 
-                // 2. Boucle de reconstruction asynchrone
-                for (const w of widgetsData) {
-                    const widget = createWidget(w.type, w.left, w.top, false);
-                    
-                    // On attend un cycle de rendu (micro-task)
-                    await new Promise(resolve => setTimeout(resolve, 50));
+                // 2. Application du fond
+                applyBackground(background);
+                saveBg(background);
 
-                    const container = widget.querySelector('.editor-container');
-                    const editor = widget.querySelector('.editor-content');
-                    const iframe = widget.querySelector('iframe');
+                // 3. Chargement des widgets
+                localStorage.setItem('profBoardConfig', JSON.stringify(widgets));
+                loadBoard();
 
-                    if (container) {
-                        container.style.width = w.width;
-                        container.style.height = w.height;
-                    }
-
-                    // Injection sécurisée des contenus
-                    if (w.html && editor) {
-                        editor.innerHTML = w.html;
-                    }
-                    if (w.iframeSrc && iframe) {
-                        iframe.src = w.iframeSrc;
-                    }
-
-                    // Application des styles de fond/transparence
-                    if (w.transparent) {
-                        applyTransparency(widget, true);
-                    } else if (w.bgColor) {
-                        widget.style.background = w.bgColor;
-                        widget.dataset.bgColor = w.bgColor;
-                    }
-                }
-                
-                // 3. Sauvegarde finale de l'état importé
-                saveBoard();
-                // Reset de l'input pour permettre de ré-importer le même fichier
                 event.target.value = '';
-                
             } catch (err) {
-                console.error(err);
-                alert("Erreur critique lors de l'importation : " + err.message);
+                alert("Erreur lors de l'importation : " + err.message);
             }
         };
         reader.readAsText(file);
     }
-	
+    
     function clearBoard() { document.getElementById('modal-overlay').style.display = 'flex'; }
     function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
     function confirmClearBoard() {
