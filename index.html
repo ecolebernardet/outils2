@@ -972,18 +972,22 @@
                 const importedData = JSON.parse(e.target.result);
                 takeSnapshot();
                 
-                // On sépare les widgets du fond d'écran selon la structure du fichier
-                const widgets = importedData.widgets || importedData; // Rétrocompatibilité
+                // Gestion de la rétrocompatibilité et extraction sécurisée
+                const widgets = importedData.widgets || (Array.isArray(importedData) ? importedData : []);
                 const background = importedData.background || 'none';
 
-                // 1. Nettoyage
+                if (!Array.isArray(widgets)) {
+                    throw new Error("Le format des widgets est invalide.");
+                }
+
+                // 1. Nettoyage du tableau actuel
                 document.querySelectorAll('.widget').forEach(w => w.remove());
 
                 // 2. Application du fond
                 applyBackground(background);
                 saveBg(background);
 
-                // 3. Chargement des widgets
+                // 3. Sauvegarde en localStorage et chargement
                 localStorage.setItem('profBoardConfig', JSON.stringify(widgets));
                 loadBoard();
 
