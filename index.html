@@ -233,8 +233,10 @@
         
         #undo-btn { position: fixed; bottom: 30px; right: 30px; background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; z-index: 9999; box-shadow: var(--shadow); }
         .tool-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; width: 100%; white-space: nowrap; }
-        .tool-btn2 { background: #dddddd; color: black; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; width: 100%; white-space: nowrap; }
-        #main-tool-btn { background: #333; width: 200px; justify-content: center; }
+        .tool-btn2 { width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: filter 0.2s; }
+
+		#undo-btn { position: static !important; bottom: auto !important; right: auto !important; }
+        #main-tool-btn { background: #333; width: 80px; justify-content: center; }
 
         .exit-fs-btn { display: none; position: absolute; top: 10px; right: 10px; z-index: 99999; background: rgba(0, 0, 0, 0.5); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
         :fullscreen .exit-fs-btn { display: block; }
@@ -407,6 +409,7 @@
             <button class="tool-btn2" onclick="document.getElementById('import-input').click()"><span>📂</span> Importer config</button>
             <input type="file" id="import-input" style="display:none" accept=".json" onchange="importConfig(event)">
             <button class="tool-btn2" onclick="clearBoard(); toggleMenu()" style="background: #ED8595; margin-top:5px;"><span>❌</span> Effacer tout</button>
+			<button id="undo-btn" onclick="undoAction()"><span>↩️</span> Annuler</button>
         </div>
         <button id="main-tool-btn" class="tool-btn" onclick="toggleMenu()">MENU</button>
     </div>
