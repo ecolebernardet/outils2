@@ -43,7 +43,7 @@
             box-sizing: border-box;
         }
 
-        /* Échelle automatique pour petits écrans / Windows 150% */
+        /* Échelle automatique pour petits écrans */
         @media (max-width: 1024px) or (max-height: 700px) {
             .widget { transform: scale(0.85); transform-origin: top left; }
             .editor-container { min-width: 200px !important; }
@@ -53,18 +53,16 @@
         .widget[data-type="homework"]:focus-within { border-color: #ff4757; }
         .widget[data-type="iframe"]:focus-within { border-color: #2bcbba; }
 
-        /* --- EFFET DE SURVOL DISCRET POUR WIDGETS TRANSPARENTS --- */
+        /* --- WIDGETS TRANSPARENTS --- */
         .widget[data-transparent="true"] {
             border: none !important;
             box-shadow: none !important;
             background: transparent !important;
         }
 
-        /* Au survol ou au focus, on affiche un fond très léger (5%) et une bordure pointillée */
         .widget[data-transparent="true"]:hover,
         .widget[data-transparent="true"]:focus-within {
-            background: rgba(74, 144, 226, 0.05) !important; /* Bleu très pâle à 5% */
-            border: 0px dashed rgba(74, 144, 226, 0.2) !important; /* Bordure pointillée discrète */
+            background: rgba(74, 144, 226, 0.05) !important;
         }
 
         .widget[data-transparent="true"] .editor-container,
@@ -73,62 +71,44 @@
             background: transparent !important;
         }
 
-        /* --- CONTRÔLES ISOLÉS (HAUT GAUCHE & HAUT DROITE) --- */
-        .widget-header { display: none !important; } /* Suppression définitive de la barre */
+        /* --- CONTRÔLES ISOLÉS --- */
+        .widget-header { display: none !important; }
 
-        .drag-handle {
+        .drag-handle, .widget-close-handle, .widget-pin-handle {
             position: absolute;
             top: 5px;
-            left: 5px; /* Déplacé à gauche */
             width: 26px;
             height: 26px;
             background: #f8f9fa;
             border-radius: 6px;
-            cursor: move;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
             z-index: 100;
             opacity: 0;
             transition: opacity 0.2s;
-            color: #666;
             border: 1px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            pointer-events: none;
         }
 
-        .widget-close-handle {
-            position: absolute;
-            top: 5px;
-            right: 5px; /* Positionné à droite */
-            width: 26px;
-            height: 26px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            z-index: 100;
-            opacity: 0;
-            transition: opacity 0.2s;
-            color: #ccc;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        .drag-handle { left: 5px; cursor: move; font-size: 14px; color: #666; }
+        .widget-close-handle { right: 5px; cursor: pointer; font-size: 18px; font-weight: bold; color: #ccc; }
+        .widget-pin-handle { right: 35px; cursor: pointer; font-size: 14px; color: #666; }
 
-        /* Affichage des contrôles au survol ou au focus */
-        .widget:hover .drag-handle,
         .widget:focus-within .drag-handle,
-        .widget:hover .widget-close-handle,
-        .widget:focus-within .widget-close-handle {
+        .widget:focus-within .widget-close-handle,
+        .widget:focus-within .widget-pin-handle {
             opacity: 1;
+            pointer-events: auto;
         }
 
         .widget-close-handle:hover { color: #ff5f56; background: white; }
         .drag-handle:hover { color: var(--primary-color); background: white; }
+        .widget-pin-handle:hover { background: white; }
+
+        .widget.pinned .widget-pin-handle { background: #FFD230; transform: rotate(-45deg); }
+        .widget.pinned { border: 2px solid transparent !important; }
 
         /* --- CONTENU & ÉDITEUR --- */
         .widget[data-type="date"], .widget[data-type="time"] { min-width: unset; width: auto; }
@@ -151,16 +131,19 @@
         .widget[data-type="date"] .editor-container { min-width: 150px; min-height: 180px; width: 220px; height: 260px; }
         .widget[data-type="time"] .editor-container { min-width: 120px; min-height: 80px; width: 200px; height: 100px; }
 
-        /* Correction décalage barre d'outils */
-        .widget .editor-toolbar { 
+        .editor-toolbar { 
+            display: flex;
             visibility: hidden; 
             opacity: 0; 
-            display: flex; 
+            gap: 4px; 
+            padding: 0px 35px; 
+            background: #f8f9fa; 
+            border-bottom: 1px solid #eee; 
+            flex-wrap: wrap; 
+            align-items: center; 
+            min-height: 36px;
         }
-        .widget:focus-within .editor-toolbar { 
-            visibility: visible; 
-            opacity: 1; 
-        }
+        .widget:focus-within .editor-toolbar { visibility: visible; opacity: 1; }
 
         .widget-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
 
@@ -176,31 +159,9 @@
             background-image: linear-gradient(135deg, transparent 50%, #333 50%, #333 60%, transparent 60%, transparent 70%, #333 70%, #333 80%, transparent 80%);
         }
 
-        .editor-toolbar { 
-            gap: 4px; 
-            /* On décalage à gauche (35px) pour la poignée et à droite (35px) pour la croix */
-            padding: 0px 35px 0px 35px; 
-            background: #f8f9fa; 
-            border-bottom: 1px solid #eee; 
-            flex-wrap: wrap; 
-            align-items: center; 
-            min-height: 36px; /* Assure une hauteur stable */
-        }
-
-        /* Spécifique aux iframes/youtube pour que le contenu ne passe pas sous les boutons */
-        .editor-container iframe {
-            margin-top: 0;
-        }
-		
         .editor-toolbar button, .editor-toolbar select, .editor-toolbar input { 
-            padding: 2px 4px; 
-            cursor: pointer; 
-            border: 1px solid #ddd; 
-            background: white; 
-            border-radius: 4px; 
-            font-size: 11px;
-            height: 26px; 
-            box-sizing: border-box;
+            padding: 2px 4px; cursor: pointer; border: 1px solid #ddd; background: white; 
+            border-radius: 4px; font-size: 11px; height: 26px; box-sizing: border-box;
         }
         
         @font-face { font-family: 'KGPerfectPenmanship'; src: url('./KGPerfectPenmanship.ttf') format('truetype'); font-weight: normal; font-style: normal; }
@@ -231,11 +192,10 @@
             #bg-submenu { left: 30px; bottom: 120px; min-width: 200px; grid-template-columns: repeat(2, 1fr); }
         }
         
-        #undo-btn { position: fixed; bottom: 30px; right: 30px; background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; z-index: 9999; box-shadow: var(--shadow); }
         .tool-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; width: 100%; white-space: nowrap; }
         .tool-btn2 { width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: filter 0.2s; }
 
-		#undo-btn { position: static !important; bottom: auto !important; right: auto !important; }
+        #undo-btn { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; z-index: 9999; box-shadow: var(--shadow); }
         #main-tool-btn { background: #333; width: 80px; justify-content: center; }
 
         .exit-fs-btn { display: none; position: absolute; top: 10px; right: 10px; z-index: 99999; background: rgba(0, 0, 0, 0.5); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
@@ -244,6 +204,7 @@
         .bg-thumb { width: 70px; height: 50px; border-radius: 6px; border: 2px solid #eee; cursor: pointer; background-size: cover; background-position: center; transition: 0.2s; }
         .bg-thumb:hover { transform: scale(1.05); border-color: var(--primary-color); }
         
+        /* --- CALENDRIER & HORLOGE --- */
         .calendar-page { width: 100%; height: 100%; display: flex; flex-direction: column; border: 1px solid #ced4da; border-radius: 8px; overflow: hidden; background: white; text-align: center; position: relative; padding-top: 15px; box-sizing: border-box; }
         .calendar-page::before { content: "● ● ●"; position: absolute; top: -8px; left: 0; right: 0; color: #8e9aaf; font-size: 24px; letter-spacing: 15px; text-shadow: 0 5px 0 #6c757d; }
         .calendar-header { background: #D17B6B; height: 20%; min-height: 30px; border-bottom: 2px solid #D17B6B; margin-bottom: 5px; }
@@ -257,116 +218,58 @@
 
         .icon-transparency { display: inline-block; width: 16px; height: 16px; border: 1px solid #333; background-color: #fff; background-image: linear-gradient(45deg, #ddd 25%, transparent 25%), linear-gradient(-45deg, #ddd 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ddd 75%), linear-gradient(-45deg, transparent 75%, #ddd 75%); background-size: 8px 8px; background-position: 0 0, 0 4px, 4px -4px, -4px 0px; vertical-align: middle; border-radius: 2px; }
         
-		/* --- STYLE DU WIDGET AGENDA --- */
-        .agenda-container {
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-            border-radius: 8px;
-            border: 1px solid #eee;
-            overflow: hidden;
-            min-height: 200px;
-        }
-
+        /* --- STYLE DU WIDGET AGENDA --- */
+        .agenda-container { display: flex; flex-direction: column; background: #fff; border-radius: 8px; border: 1px solid #eee; overflow: hidden; min-height: 200px; }
         .agenda-header-title {
-			display: flex;
-			justify-content: space-between; /* Pousse les éléments aux extrémités */
-			align-items: center;
-			padding: 10px;
-			font-weight: bold;
-            background: #4a90e2;
-            color: white;
-            font-size: 0.9em;
-            text-transform: uppercase;
+    background: #2b7fff; /* Le bleu */
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+    border-radius: 4px 4px 0 0;
+}
+
+.agenda-current-time {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+        /* Styles pour les spans de date et d'heure à l'intérieur de la barre */
+        .agenda-header-date, .agenda-header-time {
+            display: inline-block;
         }
 
-        .agenda-list {
-            padding: 10px;
-            flex-grow: 1;
+        .agenda-header-time {
+            font-family: monospace;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 10px;
         }
-
-        .agenda-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 0;
-            border-bottom: 1px dashed #eee;
-        }
-
+        .agenda-list { padding: 10px; flex-grow: 1; }
+        .agenda-item { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px dashed #eee; position: relative; }
         .agenda-item:last-child { border-bottom: none; }
+        .agenda-item.dragging { opacity: 0.5; background: #f0f7ff; border: 1px dashed var(--primary-color); }
 
-        .agenda-time {
-            font-weight: bold;
-            color: #4a90e2;
-            font-size: 1.2em;
-            min-width: 45px;
-        }
-
-        .agenda-text {
-            outline: none;
-            flex-grow: 1;
-            font-size: 1.2em;
-            color: #333;
-        }
-		
-		.agenda-add-btn {
-            background: #f8f9fa;
-            border: none;
-            border-top: 1px solid #eee;
-            padding: 5px;
-            cursor: pointer;
-            color: #4a90e2;
-            font-weight: bold;
-            font-size: 1.2em;
-            transition: background 0.2s;
-        }
-        .agenda-add-btn:hover {
-            background: #eef2f5;
-            color: #2c3e50;
-        }
-        /* On rend l'heure aussi éditable pour plus de liberté */
-        .agenda-time { outline: none; cursor: text; }
-		
-		/* --- POIGNÉE DE LIGNE AGENDA --- */
-        .agenda-row-handle {
-            cursor: grab;
-            color: #ccc;
-            padding: 0 5px;
-            font-size: 12px;
-            user-select: none;
-        }
+        .agenda-time { font-weight: bold; color: #4a90e2; font-size: 1.2em; min-width: 45px; outline: none; cursor: text; }
+        .agenda-text { outline: none; flex-grow: 1; font-size: 1.2em; color: #333; }
+        
+        .agenda-add-btn { background: #f8f9fa; border: none; border-top: 1px solid #eee; padding: 5px; cursor: pointer; color: #4a90e2; font-weight: bold; font-size: 1.2em; transition: background 0.2s; }
+        .agenda-add-btn:hover { background: #eef2f5; color: #2c3e50; }
+        
+        .agenda-row-handle { cursor: grab; color: #ccc; padding: 0 5px; font-size: 12px; user-select: none; }
         .agenda-row-handle:active { cursor: grabbing; }
 
-        /* Effet visuel pendant le déplacement */
-        .agenda-item.dragging {
-            opacity: 0.5;
-            background: #f0f7ff;
-            border: 1px dashed var(--primary-color);
-        }
-		
-		/* --- BOUTON SUPPRESSION LIGNE AGENDA --- */
-        .agenda-item {
-            position: relative; /* Pour positionner la croix */
-        }
-
-        .agenda-delete-row {
-            cursor: pointer;
-            color: #e74c3c;
-            font-weight: bold;
-            font-size: 16px;
-            padding: 0 5px;
-            opacity: 0; /* Invisible par défaut */
-            transition: opacity 0.2s;
-        }
-
-        .agenda-item:hover .agenda-delete-row {
-            opacity: 1; /* Apparaît au survol de la ligne */
-        }
-
-        .agenda-delete-row:hover {
-            transform: scale(1.2);
-        }
-		
+        .agenda-delete-row { cursor: pointer; color: #e74c3c; font-weight: bold; font-size: 16px; padding: 0 5px; opacity: 0; transition: opacity 0.2s; }
+        .agenda-item:hover .agenda-delete-row { opacity: 1; }
+        .agenda-delete-row:hover { transform: scale(1.2); }
+        
+        /* --- MODALES --- */
         #modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:20000; justify-content:center; align-items:center; }
         .modal-content { background:white; padding:30px; border-radius:var(--border-radius); box-shadow:var(--shadow); text-align:center; max-width:400px; width:90%; }
         .modal-content button { padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; }
@@ -531,7 +434,10 @@
 	<template id="template-agenda">
         <div class="editor-container">
             <div class="agenda-container">
-                <div class="agenda-header-title"><span id="agenda-current-date"></span><span id="agenda-current-time"></span></div>
+                <div class="agenda-header-title">
+					<span class="agenda-current-date"></span>
+					<span class="agenda-current-time"></span>
+				</div>
                 <div class="agenda-list">
 				    <div class="agenda-item" draggable="true" ondragstart="handleRowDragStart(event)" ondragover="handleRowDragOver(event)" ondragend="handleRowDragEnd(event)">
                         <span class="agenda-row-handle">⋮⋮</span>
@@ -630,84 +536,126 @@
     };
 
     function saveBoard() {
-        // Si on est encore en train de charger la page, on ne sauvegarde RIEN
-        if (isInitialLoading) return;
+    if (isInitialLoading) return;
 
-        const widgets = [];
-        document.querySelectorAll('.widget').forEach(w => {
-            const content = w.querySelector('.editor-content');
-            const iframe = w.querySelector('iframe');
-            
-            widgets.push({
-                type: w.dataset.type,
-                top: w.style.top,
-                left: w.style.left,
-                width: w.querySelector('.editor-container').style.width,
-                height: w.querySelector('.editor-container').style.height,
-                html: content ? content.innerHTML : null,
-                iframeSrc: iframe ? iframe.src : null,
-                transparent: w.dataset.transparent === "true",
-                bgColor: w.dataset.bgColor || "#ffffff"
-            });
+    const widgets = [];
+    document.querySelectorAll('.widget').forEach(w => {
+        // On cherche l'éditeur de texte classique OU le container de l'agenda
+        const content = w.querySelector('.editor-content');
+        const agenda = w.querySelector('.agenda-container');
+        const iframe = w.querySelector('iframe');
+        
+        // Si c'est un agenda, on sauvegarde tout son HTML interne (les lignes)
+        // Sinon, on prend le contenu de l'éditeur classique
+        let htmlContent = null;
+        if (agenda) {
+            htmlContent = agenda.innerHTML;
+        } else if (content) {
+            htmlContent = content.innerHTML;
+        }
+        
+        widgets.push({
+            type: w.dataset.type,
+            top: w.style.top,
+            left: w.style.left,
+            width: w.querySelector('.editor-container').style.width,
+            height: w.querySelector('.editor-container').style.height,
+            html: htmlContent, // Sauvegarde ici
+            iframeSrc: iframe ? iframe.src : null,
+            transparent: w.dataset.transparent === "true",
+            bgColor: w.dataset.bgColor || "#ffffff",
+            pinned: w.dataset.pinned === "true"
         });
-        localStorage.setItem('profBoardConfig', JSON.stringify(widgets));
-    }
+    });
+    localStorage.setItem('profBoardConfig', JSON.stringify(widgets));
+}
 
     function loadBoard() {
-        const data = localStorage.getItem('profBoardConfig');
-        if (!data) return;
+    const data = localStorage.getItem('profBoardConfig');
+    if (!data) return;
+    
+    const parsedData = JSON.parse(data);
+    parsedData.forEach(w => {
+        const widget = createWidget(w.type, w.left, w.top, false);
+        const container = widget.querySelector('.editor-container');
         
-        const parsedData = JSON.parse(data);
-        parsedData.forEach(w => {
-            // On passe 'false' pour le snapshot pour ne pas polluer l'historique au chargement
-            const widget = createWidget(w.type, w.left, w.top, false);
-            const container = widget.querySelector('.editor-container');
-            
-            if (container) {
-                container.style.width = w.width;
-                container.style.height = w.height;
+        if (container) {
+            container.style.width = w.width;
+            container.style.height = w.height;
+        }
+        
+        setTimeout(() => {
+            const editor = widget.querySelector('.editor-content');
+            if (w.html && editor) {
+                editor.innerHTML = w.html;
             }
-            
-            // Correction : On attend un micro-délai pour l'injection du HTML
-            setTimeout(() => {
-                const editor = widget.querySelector('.editor-content');
-                if (w.html && editor) {
-                    editor.innerHTML = w.html;
-                }
-                if (w.iframeSrc && widget.querySelector('iframe')) {
-                    widget.querySelector('iframe').src = w.iframeSrc;
-                }
-                if (w.transparent) {
-                    applyTransparency(widget, true);
-                } else if (w.bgColor) {
-                    widget.style.background = w.bgColor;
-                    widget.dataset.bgColor = w.bgColor;
-                }
-            }, 10);
-        });
-    }
+            const iframe = widget.querySelector('iframe');
+            if (w.iframeSrc && iframe) {
+                iframe.src = w.iframeSrc;
+            }
+            if (w.transparent) {
+                applyTransparency(widget, true);
+            } else if (w.bgColor) {
+                widget.style.background = w.bgColor;
+                widget.dataset.bgColor = w.bgColor;
+            }
+
+            if (w.pinned) {
+                widget.dataset.pinned = "true";
+                widget.style.zIndex = "2000";
+                widget.classList.add('pinned');
+            }
+        }, 10);
+    });
+}
 
 	function updateClock() {
     const now = new Date();
     
-    // Formatage de la date (ex: vendredi 30 janvier)
     const optionsDate = { weekday: 'long', day: 'numeric', month: 'long' };
     const dateStr = now.toLocaleDateString('fr-FR', optionsDate);
-    
-    // Formatage de l'heure (ex: 12:45:02)
-    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-    // Mise à jour des éléments dans le DOM
-    const dateEl = document.getElementById('agenda-current-date');
-    const timeEl = document.getElementById('agenda-current-time');
-    
-    if (dateEl) dateEl.textContent = dateStr;
-    if (timeEl) timeEl.textContent = timeStr;
+    // Mise à jour de TOUS les agendas présents sur le bureau
+    document.querySelectorAll('.agenda-current-date').forEach(el => {
+        el.textContent = dateStr;
+    });
+    document.querySelectorAll('.agenda-current-time').forEach(el => {
+        el.textContent = timeStr;
+    });
+
+    // On appelle aussi la mise à jour des widgets Date et Heure classiques
+    updateDateTime(); 
 }
 
-// Lancer l'horloge
-setInterval(updateClock, 1000);
-updateClock(); // Appel immédiat pour éviter le délai d'une seconde
+	// --- GESTION DU VERROUILLAGE (PIN) ---
+function togglePin(widget) {
+    const isPinned = widget.dataset.pinned === "true";
+    widget.dataset.pinned = !isPinned;
+    
+    if (!isPinned) {
+        widget.style.zIndex = "2000"; 
+        widget.classList.add('pinned');
+    } else {
+        widget.style.zIndex = "1000";
+        widget.classList.remove('pinned');
+    }
+    saveBoard();
+}
+
+function bringToFront(widget) {
+    // On ne change l'index que si le widget n'est pas déjà épinglé au-dessus
+    if (widget.dataset.pinned === "true") return;
+
+    document.querySelectorAll('.widget').forEach(w => {
+        // On remet à 1 seulement ceux qui ne sont pas épinglés
+        if (w.dataset.pinned !== "true") {
+            w.style.zIndex = "1";
+        }
+    });
+    widget.style.zIndex = "1000";
+}
+
 
     // --- CRÉATION DES WIDGETS ---
     function createWidget(type, x = '100px', y = '100px', snapshot = true) {
@@ -718,11 +666,12 @@ updateClock(); // Appel immédiat pour éviter le délai d'une seconde
     widget.style.left = x;
     widget.style.top = y;
     widget.tabIndex = 0;
-
-    const titles = { text: "Note", homework: "Devoirs", date: "Date", time: "Heure", iframe: "Web", youtube: "YouTube", outilsprofs: "Outils", agenda: "Agenda" };
-
+    
+    widget.addEventListener('mousedown', () => bringToFront(widget));
+    
     widget.innerHTML = `
         <div class="drag-handle" title="Déplacer">✥</div>
+        <div class="widget-pin-handle" onclick="togglePin(this.closest('.widget'))" title="Épingler au premier plan">📌</div>
         <div class="widget-close-handle" onclick="takeSnapshot(); this.closest('.widget').remove(); saveBoard();" title="Fermer">×</div>
         <div class="widget-content"></div>`;
 
@@ -738,15 +687,32 @@ updateClock(); // Appel immédiat pour éviter le délai d'une seconde
     board.appendChild(widget);
     makeDraggable(widget);
 
-    // Lecture de la taille de police au clic (Synchronisation)
+    // --- AJOUT : Force la mise à jour immédiate de l'heure et date pour l'agenda ---
+    if (type === 'agenda') {
+        updateClock();
+        
+        // On récupère toutes les lignes (celles du template qui viennent d'être injectées)
+        widget.querySelectorAll('.agenda-item').forEach(item => {
+            // Pour chaque zone de texte dans la ligne
+            item.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                // Si la souris entre dans le texte, on coupe le "drag" pour cliquer librement
+                el.addEventListener('mouseenter', () => {
+                    item.draggable = false;
+                });
+                // Si la souris sort, on réactive le "drag" pour pouvoir déplacer la ligne
+                el.addEventListener('mouseleave', () => {
+                    item.draggable = true;
+                });
+            });
+        });
+    }
+
     const editor = widget.querySelector('.editor-content');
     if (editor) {
         editor.addEventListener('mouseup', () => syncFontSize(widget));
         editor.addEventListener('keyup', () => syncFontSize(widget));
     }
 
-    // --- CORRECTION ICI ---
-    // On ne sauvegarde que si nous ne sommes pas dans la phase de chargement initial
     if (!isInitialLoading) {
         saveBoard();
     }
@@ -769,14 +735,13 @@ updateClock(); // Appel immédiat pour éviter le délai d'une seconde
         }
     }
 
-    // --- DRAG & DROP ---
-    function makeDraggable(elmnt) {
-        const handle = elmnt.querySelector('.drag-handle');
-        handle.onmousedown = (e) => {
-            e.preventDefault();
-            document.querySelectorAll('.widget').forEach(w => w.style.zIndex = "1");
-            elmnt.style.zIndex = "1000";
-            let pos3 = e.clientX, pos4 = e.clientY;
+		// --- DRAG & DROP ---
+		function makeDraggable(elmnt) {
+		const handle = elmnt.querySelector('.drag-handle');
+		handle.onmousedown = (e) => {
+        e.preventDefault();
+        bringToFront(elmnt); // Utilisation de la nouvelle fonction
+        let pos3 = e.clientX, pos4 = e.clientY;
             document.onmousemove = (e) => {
                 elmnt.style.top = (elmnt.offsetTop - (pos4 - e.clientY)) + "px";
                 elmnt.style.left = (elmnt.offsetLeft - (pos3 - e.clientX)) + "px";
@@ -940,21 +905,26 @@ updateClock(); // Appel immédiat pour éviter le délai d'une seconde
 
     // --- UTILITAIRES ---
     function updateDateTime() {
-        const now = new Date();
-        const days = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-        const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+    const now = new Date();
+    const days = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+    const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
-        document.querySelectorAll('.widget[data-type="date"]').forEach(w => {
-            w.querySelector('.calendar-day-name').textContent = days[now.getDay()];
-            w.querySelector('.calendar-day-number').textContent = now.getDate();
-            w.querySelector('.calendar-month').textContent = months[now.getMonth()];
-        });
+    document.querySelectorAll('.widget[data-type="date"]').forEach(w => {
+        const dName = w.querySelector('.calendar-day-name');
+        const dNum = w.querySelector('.calendar-day-number');
+        const dMonth = w.querySelector('.calendar-month');
+        if(dName) dName.textContent = days[now.getDay()];
+        if(dNum) dNum.textContent = now.getDate();
+        if(dMonth) dMonth.textContent = months[now.getMonth()];
+    });
 
-        document.querySelectorAll('.widget[data-type="time"]').forEach(w => {
-            w.querySelector('.clock-hm').textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-            w.querySelector('.clock-seconds').textContent = now.getSeconds().toString().padStart(2, '0');
-        });
-    }
+    document.querySelectorAll('.widget[data-type="time"]').forEach(w => {
+        const hm = w.querySelector('.clock-hm');
+        const sec = w.querySelector('.clock-seconds');
+        if(hm) hm.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        if(sec) sec.textContent = now.getSeconds().toString().padStart(2, '0');
+    });
+}
 
 	let draggingRow = null;
 
@@ -1003,25 +973,32 @@ updateClock(); // Appel immédiat pour éviter le délai d'une seconde
 
     // Mise à jour de la fonction d'ajout (inclure le bouton de suppression)
     function addAgendaLine(button) {
-        const list = button.closest('.agenda-container').querySelector('.agenda-list');
-        const newItem = document.createElement('div');
-        newItem.className = 'agenda-item';
-        newItem.draggable = true;
-        
-        // Ré-attachement des événements de drag
-        newItem.addEventListener('dragstart', handleRowDragStart);
-        newItem.addEventListener('dragover', handleRowDragOver);
-        newItem.addEventListener('dragend', handleRowDragEnd);
-        
-        newItem.innerHTML = `
-            <span class="agenda-row-handle">⋮⋮</span>
-            <span class="agenda-time" contenteditable="true">00:00</span>
-            <div class="agenda-text" contenteditable="true">...</div>
-            <span class="agenda-delete-row" onclick="deleteAgendaLine(this)" title="Supprimer la ligne">×</span>
-        `;
-        list.appendChild(newItem);
-        saveBoard();
-    }
+    const list = button.closest('.agenda-container').querySelector('.agenda-list');
+    const newItem = document.createElement('div');
+    newItem.className = 'agenda-item';
+    newItem.draggable = true;
+    
+    // --- GESTION DU FOCUS PRÉCIS ---
+    // On désactive le drag quand la souris entre dans une zone éditable
+    newItem.querySelectorAll('[contenteditable="true"]').forEach(el => {
+        el.onmouseenter = () => newItem.draggable = false;
+        el.onmouseleave = () => newItem.draggable = true;
+    });
+
+    newItem.addEventListener('dragstart', handleRowDragStart);
+    newItem.addEventListener('dragover', handleRowDragOver);
+    newItem.addEventListener('dragend', handleRowDragEnd);
+    newItem.addEventListener('input', saveBoard);
+    
+    newItem.innerHTML = `
+        <span class="agenda-row-handle">⋮⋮</span>
+        <span class="agenda-time" contenteditable="true">00:00</span>
+        <div class="agenda-text" contenteditable="true">...</div>
+        <span class="agenda-delete-row" onclick="deleteAgendaLine(this)" title="Supprimer la ligne">×</span>
+    `;
+    list.appendChild(newItem);
+    saveBoard();
+}
 	
     function takeSnapshot() {
         history.push(localStorage.getItem('profBoardConfig'));
@@ -1038,23 +1015,24 @@ updateClock(); // Appel immédiat pour éviter le délai d'une seconde
     }
 
 	function exportConfig() {
-        const widgets = [];
-        document.querySelectorAll('.widget').forEach(w => {
-            const content = w.querySelector('.editor-content');
-            const iframe = w.querySelector('iframe');
-            
-            widgets.push({
-                type: w.dataset.type,
-                top: w.style.top,
-                left: w.style.left,
-                width: w.querySelector('.editor-container').style.width,
-                height: w.querySelector('.editor-container').style.height,
-                html: content ? content.innerHTML : null,
-                iframeSrc: iframe ? iframe.src : null,
-                transparent: w.dataset.transparent === "true",
-                bgColor: w.dataset.bgColor || "#ffffff"
-            });
+    const widgets = [];
+    document.querySelectorAll('.widget').forEach(w => {
+        const content = w.querySelector('.editor-content');
+        const iframe = w.querySelector('iframe');
+        
+        widgets.push({
+            type: w.dataset.type,
+            top: w.style.top,
+            left: w.style.left,
+            width: w.querySelector('.editor-container').style.width,
+            height: w.querySelector('.editor-container').style.height,
+            html: content ? content.innerHTML : null,
+            iframeSrc: iframe ? iframe.src : null,
+            transparent: w.dataset.transparent === "true",
+            bgColor: w.dataset.bgColor || "#ffffff",
+            pinned: w.dataset.pinned === "true" // AJOUT ICI
         });
+    });
 
         // Génération de la date au format AAAA-MM-JJ
         const now = new Date();
