@@ -291,6 +291,7 @@
             <button class="tool-btn" onclick="createWidget('homework'); toggleMenu()" style="background: #3BB8DB;"><span>📝</span> Devoirs</button>
             <button class="tool-btn" onclick="createWidget('text'); toggleMenu()" style="background: #2B7FFF;"><span>🖊️</span> Texte</button>
 			<button class="tool-btn" onclick="createWidget('agenda'); toggleMenu()" style="background: #8E51FF">📌 Planning</button>
+			<button class="tool-btn" onclick="createWidget('deficalme'); toggleMenu()" style="background: #480eb3;"><span>🧘</span> Défi Calme</button>
             
             <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 5px 0;">
             <button class="tool-btn" style="background: #71717B;" onclick="toggleSubMenu(event)"><span>🖼️</span> Choisir fond ❯</button>
@@ -510,6 +511,16 @@
         </div>
     </template>
 	
+	<template id="template-deficalme">
+		<div class="editor-container" style="height: 500px; width: 800px;">
+			<button class="exit-fs-btn" onclick="document.exitFullscreen()">✖ Quitter Plein Écran</button>
+			<div class="editor-toolbar" style="display: flex; justify-content: flex-end;">
+				<button onclick="toggleFullScreen(this.closest('.editor-container'))" title="Plein écran">⛶ Plein écran</button>
+			</div>
+			<iframe src="https://ecolebernardet.github.io/outilsprofs/outils_deficalme%20-%20lebureauduprof.html" style="flex-grow: 1; border: none; background: white;" allow="microphone; camera; display-capture; autoplay"></iframe>
+		</div>
+	</template>
+
     <input type="file" id="bg-upload" style="display:none" accept="image/*" onchange="handleBgUpload(this)">
 
 <script>
@@ -972,22 +983,18 @@
                 const importedData = JSON.parse(e.target.result);
                 takeSnapshot();
                 
-                // Gestion de la rétrocompatibilité et extraction sécurisée
-                const widgets = importedData.widgets || (Array.isArray(importedData) ? importedData : []);
+                // On sépare les widgets du fond d'écran selon la structure du fichier
+                const widgets = importedData.widgets || importedData; // Rétrocompatibilité
                 const background = importedData.background || 'none';
 
-                if (!Array.isArray(widgets)) {
-                    throw new Error("Le format des widgets est invalide.");
-                }
-
-                // 1. Nettoyage du tableau actuel
+                // 1. Nettoyage
                 document.querySelectorAll('.widget').forEach(w => w.remove());
 
                 // 2. Application du fond
                 applyBackground(background);
                 saveBg(background);
 
-                // 3. Sauvegarde en localStorage et chargement
+                // 3. Chargement des widgets
                 localStorage.setItem('profBoardConfig', JSON.stringify(widgets));
                 loadBoard();
 
